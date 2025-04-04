@@ -1,0 +1,12 @@
+# CMake
+**/build
+**/cmake-build-debug
+**/out
+
+# .
+**/.cache
+**/.idea
+**/.vscode
+
+
+
