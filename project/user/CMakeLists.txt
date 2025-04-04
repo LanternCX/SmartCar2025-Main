@@ -44,6 +44,7 @@ include_directories(../../libraries/zf_components)
 include_directories(../user/utils)
 include_directories(../user/utils/display)
 include_directories(../user/utils/image)
+include_directories(../user/utils/control)
 
 # 从目录下查找C/C++文件
 aux_source_directory(../user DIR_SRCS)
@@ -56,6 +57,7 @@ aux_source_directory(../../libraries/zf_components DIR_SRCS)
 aux_source_directory(../user/utils DIR_SRCS)
 aux_source_directory(../user/utils/display DIR_SRCS)
 aux_source_directory(../user/utils/image DIR_SRCS)
+aux_source_directory(../user/utils/control DIR_SRCS)
 
 # 创建可执行文件，使用项目名称作为目标名称
 add_executable(${PROJECT_NAME} ${DIR_SRCS})
