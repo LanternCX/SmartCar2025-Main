@@ -15,6 +15,8 @@
 
 #define MAX_DUTY (30) // 最大 MAX_DUTY% 占空比
 
+#define MOTOR_DEBUG 1
+
 #include "PID.h"
 void motorInit();
 void leftMotorRun(int duty, int dir);

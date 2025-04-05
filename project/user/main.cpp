@@ -108,7 +108,7 @@ int test2(){
     int speed = 150;
 
     leftMotorRun(15, 1);
-    // rightMotorRun(15, 1);
+    rightMotorRun(15, 1);
     
     std::cout << "PID: " << getPID().kp << ' ' << getPID().ki << ' ' << getPID().kd << '\n';
     while (true) {
@@ -119,7 +119,7 @@ int test2(){
             speed += 10 * switchMod;
         }
         setLeftSpeed(speed);
-        // setRightSpeed(speed);
+        setRightSpeed(speed);
         ips200_show_string(100 + 10, 100, std::string("P: " + std::to_string(getPID().kp)).c_str());
         ips200_show_string(100 + 10, 120, std::string("I: " + std::to_string(getPID().ki)).c_str());
         ips200_show_string(100 + 10, 140, std::string("D: " + std::to_string(getPID().kd)).c_str());
