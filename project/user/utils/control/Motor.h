@@ -19,8 +19,8 @@
 void motorInit();
 void leftMotorRun(int duty, int dir);
 void rightMotorRun(int duty, int dir);
-void initPID();
 pid_param_t getPID();
 void setPID(float kp, float ki, float kd);
-void setSpeed(int speed);
+void setLeftSpeed(int speed);
+void setRightSpeed(int speed);
 #endif

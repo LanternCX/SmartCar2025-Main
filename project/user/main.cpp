@@ -106,22 +106,23 @@ int test2(){
     signal(SIGINT, sigint_handler);
 
     int speed = 150;
-    initPID();
+
     leftMotorRun(15, 1);
+    // rightMotorRun(15, 1);
+    
     std::cout << "PID: " << getPID().kp << ' ' << getPID().ki << ' ' << getPID().kd << '\n';
     while (true) {
         ips200_clear();
-        ips200_show_string(10, 60, std::string("KEY 0: " + std::to_string(gpio_get_level(KEY_0))).c_str());
-
         int switchMod = gpio_get_level(SWITCH_0) == 0 ? 1 : -1;
-        ips200_show_string(10, 40, std::string("Switch Mod: " + std::to_string(switchMod)).c_str());
+        ips200_show_string(100 + 10, 20, std::string("Switch Mod: " + std::to_string(switchMod)).c_str());
         if(!gpio_get_level(KEY_1)){
             speed += 10 * switchMod;
         }
-        setSpeed(speed);
-        ips200_show_string(10, 100, std::string("P: " + std::to_string(getPID().kp)).c_str());
-        ips200_show_string(10, 120, std::string("I: " + std::to_string(getPID().ki)).c_str());
-        ips200_show_string(10, 140, std::string("D: " + std::to_string(getPID().kd)).c_str());
+        setLeftSpeed(speed);
+        // setRightSpeed(speed);
+        ips200_show_string(100 + 10, 100, std::string("P: " + std::to_string(getPID().kp)).c_str());
+        ips200_show_string(100 + 10, 120, std::string("I: " + std::to_string(getPID().ki)).c_str());
+        ips200_show_string(100 + 10, 140, std::string("D: " + std::to_string(getPID().kd)).c_str());
         system_delay_ms(100);
     }
     return 0;
