@@ -8,6 +8,7 @@
 #include "Image.h"
 #include "Display.h"
 #include "Motor.h"
+#include "Servo.h"
 #include "PID.h"
 #include "zf_device_ips200_fb.h"
 #include "zf_driver_delay.h"
@@ -26,6 +27,7 @@ void cleanup()
     // 关闭电机
     pwm_set_duty(MOTOR1_PWM, 0);   
     pwm_set_duty(MOTOR2_PWM, 0);
+    pwm_set_duty(SERVO_MOTOR1_PWM, 0);
 }
 
 void sigint_handler(int signum) 
@@ -34,7 +36,7 @@ void sigint_handler(int signum)
     exit(0);
 }
 
-int test(){
+int imageTest(){
     cv::VideoCapture cap(0);
     // // width
     // cap.set(cv::CAP_PROP_FRAME_WIDTH, 240);
@@ -93,36 +95,32 @@ int test(){
     return 0;
 }
 
-int test2(){
+int motorTest(){
     // display init 
     ips200_init("/dev/fb0");
 
-    motorInit();
-
     // 注册清理函数
     atexit(cleanup);
-
+    
     // 注册SIGINT信号的处理函数
     signal(SIGINT, sigint_handler);
+    
+    motorInit();
 
     int speed = 150;
-
-    leftMotorRun(15, 1);
-    rightMotorRun(15, 1);
     
-    std::cout << "PID: " << getPID().kp << ' ' << getPID().ki << ' ' << getPID().kd << '\n';
     while (true) {
         ips200_clear();
+
         int switchMod = gpio_get_level(SWITCH_0) == 0 ? 1 : -1;
         ips200_show_string(100 + 10, 20, std::string("Switch Mod: " + std::to_string(switchMod)).c_str());
         if(!gpio_get_level(KEY_1)){
             speed += 10 * switchMod;
         }
+
         setLeftSpeed(speed);
         setRightSpeed(speed);
-        ips200_show_string(100 + 10, 100, std::string("P: " + std::to_string(getPID().kp)).c_str());
-        ips200_show_string(100 + 10, 120, std::string("I: " + std::to_string(getPID().ki)).c_str());
-        ips200_show_string(100 + 10, 140, std::string("D: " + std::to_string(getPID().kd)).c_str());
+
         system_delay_ms(100);
     }
     return 0;
@@ -130,6 +128,6 @@ int test2(){
 int main()   
 {
     std::cout << "version: 1.0.3" << std::endl;
-    return test2();
+    return motorTest();
 }
 

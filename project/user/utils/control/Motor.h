@@ -19,10 +19,6 @@
 
 #include "PID.h"
 void motorInit();
-void leftMotorRun(int duty, int dir);
-void rightMotorRun(int duty, int dir);
-pid_param_t getPID();
-void setPID(float kp, float ki, float kd);
 void setLeftSpeed(int speed);
 void setRightSpeed(int speed);
 #endif
