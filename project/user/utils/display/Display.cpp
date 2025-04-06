@@ -2,6 +2,17 @@
 #include "zf_common_headfile.h"
 #include "Display.h"
 
+/**
+ * 屏幕操作相关函数
+ */
+
+/**
+ * @brief 在屏幕绘制彩色图像
+ * @param frame 图像
+ * @return None
+ * @author Cao Xin
+ * @date 2025-04-04
+ */
 void draw_rgb_img(cv::Mat frame){
     int width = std::min(frame.cols, IMG_WIDTH / IMG_SCALE);
     int height = std::min(frame.rows, IMG_HEIGHT / IMG_SCALE);
@@ -41,6 +52,13 @@ void draw_rgb_img(cv::Mat frame){
     }
 }
 
+/**
+ * @brief 在屏幕绘制灰度图像
+ * @param frame 图像
+ * @return None
+ * @author Cao Xin
+ * @date 2025-04-04
+ */
 void draw_gray_img(cv::Mat frame){
     int width = std::min(frame.cols, IMG_WIDTH / IMG_SCALE);
     int height = std::min(frame.rows, IMG_HEIGHT / IMG_SCALE);

@@ -1,10 +1,19 @@
 #ifndef _LOW_PASS_H_
 #define _LOW_PASS_H_
 
-typedef struct {
-    float last;
-    float alpha;
-} LowPassFilter;
+/**
+ * 低通滤波器头文件
+ */
 
-float lowPassFilter(LowPassFilter * param, float now);
+typedef struct {
+    /**
+     * 上一次的输入值
+     */
+    float last;
+    /**
+     * 滤波系数
+     */
+    float alpha;
+} low_pass_param;
+float low_pass_filter(low_pass_param * param, float now);
 #endif

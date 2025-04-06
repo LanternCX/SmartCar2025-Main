@@ -1,6 +1,10 @@
 #ifndef _SERVO_H_
 #define _SERVO_H_
 
+/**
+ * 前轮舵机控制头文件
+ */
+
 // 定义驱动路劲，该路劲由设备树生成
 #define SERVO_MOTOR1_PWM "/dev/zf_device_pwm_servo"
 
@@ -18,7 +22,7 @@
 // 计算舵机占空比
 #define SERVO_MOTOR_DUTY(x) ((float)PWM_DUTY_MAX / (1000.0 / (float)SERVO_MOTOR_FREQ) * (0.5 + (float)(x) / 90.0))
 
-void servoToCenter(int center, int width);
-void servoInit();
-void setServoDuty(int duty);
+void servo_to_center(int center, int width);
+void servo_init();
+void set_servo_duty(int duty);
 #endif

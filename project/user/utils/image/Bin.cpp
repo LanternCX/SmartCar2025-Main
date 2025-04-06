@@ -1,10 +1,17 @@
 #include <opencv2/opencv.hpp>
+
+/**
+ * 大津法二值化相关函数
+ */
+
 /**
  * @brief 使用大津法计算灰度图像的动态阈值
- * @param src 输入的灰度图像 (cv::Mat, 单通道)
- * @return 计算得到的阈值 (uint8_t)
+ * @param src 输入的灰度图像
+ * @return 计算得到的阈值
+ * @author Cao Xin
+ * @date 2025-04-03
  */
-uint8_t otsuThreshold(const cv::Mat& src) {
+uint8_t otsu_threshold(const cv::Mat& src) {
     // 检查输入图像是否为灰度图像
     if (src.channels() != 1) {
         throw std::runtime_error("Input image must be grayscale (single channel).");
@@ -81,10 +88,13 @@ uint8_t otsuThreshold(const cv::Mat& src) {
 
 /**
  * @brief 使用大津法对灰度图像进行二值化
- * @param src 输入的灰度图像 (cv::Mat, 单通道)
- * @param dst 输出的二值化图像 (cv::Mat, 单通道)
+ * @param src 输入的灰度图像
+ * @param dst 输出的二值化图像
+ * @return 计算得到的阈值
+ * @author Cao Xin
+ * @date 2025-04-03
  */
-void binarizeWithOtsu(const cv::Mat& src, cv::Mat& dst) {
+void otsu_binarize(const cv::Mat& src, cv::Mat& dst) {
     // 检查输入图像是否为空
     if (src.empty()) {
         throw std::runtime_error("Input image is empty.");
@@ -95,7 +105,7 @@ void binarizeWithOtsu(const cv::Mat& src, cv::Mat& dst) {
     }
 
     // 计算大津法阈值
-    uint8_t threshold = otsuThreshold(src);
+    uint8_t threshold = otsu_threshold(src);
 
     // 创建输出图像，初始化为全黑
     dst = cv::Mat::zeros(src.size(), CV_8UC1);

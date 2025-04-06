@@ -4,8 +4,10 @@ include(cross.cmake)
 # 设置CMake的最低版本要求
 cmake_minimum_required(VERSION 3.5.0)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread -Wall")  # 对于 C++ 编译器
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -Wall")      # 对于 C 编译器
+# 对于 C++ 编译器
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread -Wall")
+ # 对于 C 编译器
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -Wall")
 
 # 获取当前 CMakeLists.txt 文件所在目录的完整路径
 set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})

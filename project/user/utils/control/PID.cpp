@@ -1,5 +1,18 @@
 #include "PID.h"
 
+/**
+ * PID 控制相关函数
+ */
+
+/**
+ * @brief 限幅
+ * @param a 输入值
+ * @param min 最小值
+ * @param max 最大值
+ * @return 限幅之后的数据
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
 float minmax(float a, float min, float max){
     if(a < min){
         return min;
@@ -10,8 +23,15 @@ float minmax(float a, float min, float max){
     return a;
 }
 
-// 常规 PID
-float pid_solve(pid_param_t *pid, float error) {
+/**
+ * @brief 位置式 PID 控制器
+ * @param param 控制参数结构体
+ * @param error 与目标的误差值
+ * @return 滤波之后的数据
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
+float pid_slove(pid_param *pid, float error) {
     pid->out_d = (error - pid->out_p) * pid->low_pass + pid->out_d * (1 - pid->low_pass);
     pid->out_p = error;
     pid->out_i += error;
@@ -21,8 +41,15 @@ float pid_solve(pid_param_t *pid, float error) {
     return minmax(pid->kp * pid->out_p + pid->ki * pid->out_i + pid->kd * pid->out_d, pid->out_min, pid->out_max);
 }
 
-// 增量式 PID
-float increment_pid_solve(pid_param_t *pid, float error) {
+/**
+ * @brief 增量式 PID 控制器
+ * @param param 控制参数结构体
+ * @param error 与目标的误差值
+ * @return 滤波之后的数据
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
+float increment_pid_solve(pid_param *pid, float error) {
     pid->out_d = minmax(pid->kd * (error - 2 * pid->pre_error + pid->pre_pre_error), -pid->d_max, pid->d_max);
     pid->out_p = minmax(pid->kp * (error - pid->pre_error), -pid->p_max, pid->p_max);
     pid->out_i = minmax(pid->ki * error, -pid->i_max, pid->i_max);

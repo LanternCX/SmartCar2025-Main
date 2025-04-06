@@ -4,16 +4,35 @@
 #include <vector>
 #include "Line.h"
 
+/**
+ * 扫线相关函数
+ */
+
 std::vector<int> leftX;  
 std::vector<int> rightX;
 
-void drawBorder(cv::Mat& image) {
+/**
+ * @brief 给图像绘制黑色边框
+ * @param image 输入的图像
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-03
+ */
+void draw_border(cv::Mat& image) {
     if (image.empty()) return;
     // 画矩形框
     cv::rectangle(image, cv::Point(0, 0), cv::Point(image.cols-1, image.rows-1), cv::Scalar(0), 1);
 }
 
-int lineDetection(cv::Mat binary, cv::Mat& src) {
+/**
+ * @brief 八邻域找左右边线
+ * @param binary 输入的二值化图像
+ * @param src 原始图像指针, 会向原始图像绘制扫线结果
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-03
+ */
+int line_detection(cv::Mat binary, cv::Mat& src) {
     // 输入验证
     if (binary.empty() || src.empty() || binary.type() != CV_8UC1) {
         return -1;
@@ -24,7 +43,7 @@ int lineDetection(cv::Mat binary, cv::Mat& src) {
         cv::resize(src, src, binary.size());
     }
 
-    drawBorder(binary);
+    draw_border(binary);
 
     uchar * frame = binary.data;
     // 图像尺寸
@@ -112,14 +131,14 @@ int lineDetection(cv::Mat binary, cv::Mat& src) {
         // 左边扫描
         std::vector<cv::Point> leftCandidates;
         for (int i = 0; i < 8; i++) {
-            // 当前八领域检查的点
+            // 当前八邻域检查的点
             int nowX = leftCenter.x + seedsL[i][0];
             int nowY = leftCenter.y + seedsL[i][1];
             if (nowX < 0 || nowX >= width || nowY < 0 || nowY >= height){
                 continue;
             }
 
-            // 下一个八领域检查的点
+            // 下一个八邻域检查的点
             int nextIdx = (i + 1) % 8;
             int nextX = leftCenter.x + seedsL[nextIdx][0];
             int nextY = leftCenter.y + seedsL[nextIdx][1];
