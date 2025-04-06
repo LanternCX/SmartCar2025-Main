@@ -22,6 +22,9 @@
 // 计算舵机占空比
 #define SERVO_MOTOR_DUTY(x) ((float)PWM_DUTY_MAX / (1000.0 / (float)SERVO_MOTOR_FREQ) * (0.5 + (float)(x) / 90.0))
 
+// 是否打开 Debug 模式
+#define SERVO_DEBUG 1
+
 void servo_to_center(int center, int width);
 void servo_init();
 void set_servo_duty(int duty);

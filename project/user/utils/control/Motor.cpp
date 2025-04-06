@@ -17,16 +17,17 @@ struct pwm_info motor_1_pwm_info;
 struct pwm_info motor_2_pwm_info;
 
 // PID
-pid_param leftPID;
-pid_param rightPID;
+pid_param left_pid;
+pid_param right_pid;
+pid_param dir_pid;
 
 // Low Pass Filter
-low_pass_param leftLowPass;
-low_pass_param rightLowPass;
+low_pass_param left_low_pass;
+low_pass_param right_low_pass;
 
 // Duty
-static int leftDuty = 10;
-static int rightDuty = 10;
+static int left_duty = 10;
+static int right_duty = 10;
 
 /**
  * @brief 取最小值
@@ -70,6 +71,33 @@ void init_motor_pid(pid_param &pid){
 
     pid.out_min = -30.0;
     pid.out_max = 30.0;
+    
+    pid.out_p = 0.0;
+    pid.out_i = 0.0;
+    pid.out_d = 0.0;
+
+    pid.pre_error = 0.0;
+    pid.pre_pre_error = 0.0;
+}
+
+/**
+ * @brief 初始化方向 PID 控制器
+ * @param pid PID 控制器参数结构体指针
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
+void init_dir_pid(pid_param &pid){
+    pid.kp = 0.5;
+    pid.ki = 0.00;
+    pid.kd = 0.00;
+
+    pid.p_max = 60.0;
+    pid.i_max = 60.0;
+    pid.d_max = 60.0;
+
+    pid.out_min = -200.0;
+    pid.out_max = 200.0;
     
     pid.out_p = 0.0;
     pid.out_i = 0.0;
@@ -131,20 +159,21 @@ void motor_init(){
     pwm_get_dev_info(MOTOR2_PWM, &motor_2_pwm_info);
 
     // 初始化左右电机 PID 控制器
-    init_motor_pid(leftPID);
-    init_motor_pid(rightPID);
+    init_motor_pid(left_pid);
+    init_motor_pid(right_pid);
+    init_dir_pid(dir_pid);
 
     // 初始化左右编码器低通滤波器
-    init_motor_low_pass(leftLowPass);
-    init_motor_low_pass(rightLowPass);
+    init_motor_low_pass(left_low_pass);
+    init_motor_low_pass(right_low_pass);
     
     // Debug 信息
     if(MOTOR_DEBUG){
         std::cout << "Motor Param:" << '\n';
-        std::cout << "P: " << leftPID.kp;
-        std::cout << "I: " << leftPID.ki;
-        std::cout << "D: " << leftPID.kd << '\n';
-        std::cout << "Alpha: " << leftLowPass.alpha << '\n';
+        std::cout << "P: " << left_pid.kp;
+        std::cout << "I: " << left_pid.ki;
+        std::cout << "D: " << left_pid.kd << '\n';
+        std::cout << "Alpha: " << left_low_pass.alpha << '\n';
     }
 }
 
@@ -160,17 +189,17 @@ void set_left_speed(int speed){
     // 左右编码器因为朝向安装的不同左电机需要取相反数
     float now = -encoder_get_count(ENCODER_2);
     // 对转速进行低通滤波
-    now = low_pass_filter(&leftLowPass, now);
+    now = low_pass_filter(&left_low_pass, now);
     // 计算误差
     float error = speed - now;
     // PID 计算增量
-    float det = increment_pid_solve(&leftPID, error);
+    float det = increment_pid_solve(&left_pid, error);
 
     // 计算输出值
-    leftDuty += det;
+    left_duty += det;
 
     // 输出到电机控制
-    left_motor_run(abs(leftDuty), leftDuty > 0 ? 0 : 1);
+    left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
 
     // Debug 信息
     if(MOTOR_DEBUG){
@@ -178,7 +207,7 @@ void set_left_speed(int speed){
         static int leftOut[100];
         cnt1++;
         cnt1 %= 100;
-        std::cout << "duty-l: " <<  leftDuty << " now-l: " << now << " target-l: " << speed << " error-l: " << error << '\n';
+        // std::cout << "duty-l: " <<  left_duty << " now-l: " << now << " target-l: " << speed << " error-l: " << error << '\n';
         leftOut[cnt1] = now;
         for(int i = 0; i < 100; i++){
             ips200_draw_point((10 + i), (uint16)max(320 - leftOut[i] / 3.0, 1), 0x00FF);
@@ -195,21 +224,21 @@ void set_left_speed(int speed){
  * @author Cao Xin
  * @date 2025-04-05
  */
-void setRightSpeed(int speed){
+void set_right_speed(int speed){
     // 获取当前转速
     float now = encoder_get_count(ENCODER_1);
     // 对转速进行低通滤波
-    now = low_pass_filter(&rightLowPass, now);
+    now = low_pass_filter(&right_low_pass, now);
     // 计算误差
     float error = speed - now;
     // PID 计算增量
-    float det = increment_pid_solve(&rightPID, error);
+    float det = increment_pid_solve(&right_pid, error);
     
     // 计算输出值
-    rightDuty += det;
+    right_duty += det;
 
     // 输出到电机控制
-    right_motor_run(abs(rightDuty), rightDuty > 0 ? 0 : 1);
+    right_motor_run(abs(right_duty), right_duty > 0 ? 0 : 1);
 
     // Debug 信息
     if(MOTOR_DEBUG){
@@ -217,11 +246,27 @@ void setRightSpeed(int speed){
         static int rightOut[100];
         cnt2++;
         cnt2 %= 100;
-        std::cout << "duty-r: " <<  rightDuty << " now-r: " << now << " target-l: " << speed << " error-r: " << error << '\n';
+        // std::cout << "duty-r: " <<  right_duty << " now-r: " << now << " target-l: " << speed << " error-r: " << error << '\n';
         rightOut[cnt2] = now;
         for(int i = 0; i < 100; i++){
             ips200_draw_point((10 + i), (uint16)max(220 - rightOut[i] / 3.0, 1), 0xF800);
             ips200_draw_point((10 + i), (uint16)max(220 - speed / 3.0, 1), 0xF800);
         }
     }
+}
+
+void motor_to_center(int now, int target, int speed){
+    int error = target - now;
+    int det = 0;
+    if(target != -1){
+        det = pid_slove(&dir_pid, error);
+    }
+    if(MOTOR_DEBUG){
+        std::cerr << "speed-target: " << target << ' ';
+        std::cerr << "speed-now: " << now << ' '; 
+        std::cerr << "speed-det: " << det << ' ';
+        std::cerr << "speed-error: " << error << '\n';
+    }
+    set_left_speed(speed + det);
+    set_right_speed(speed - det);
 }

@@ -6,6 +6,7 @@
 #include "Display.h"
 #include "Motor.h"
 #include "Servo.h"
+#include "zf_device_ips200_fb.h"
 
 #define KEY_0       "/dev/zf_driver_gpio_key_0"
 #define KEY_1       "/dev/zf_driver_gpio_key_1"
@@ -65,7 +66,7 @@ int run() {
     // Init Motor
     motor_init();
 
-    int speed = 30;
+    int speed = 150;
     while (true) {
         // Read Frame
         cap >> frame;
@@ -85,18 +86,21 @@ int run() {
         // Get Center
         int center = line_detection(bin, frame);
 
-        // Servo control
         int width = bin.cols;
+
+        // Servo control
         servo_to_center(center, width / 2);
 
         // Motor control
-        set_left_speed(speed);
-        setRightSpeed(speed);
+        motor_to_center(center, width / 2, speed);
 
         // Debug
         if(gpio_get_level(SWITCH_0)){
             cv::resize(frame, frame, cv::Size(IMG_WIDTH, IMG_HEIGHT));
             draw_rgb_img(frame);
+        }else{
+            ips200_clear();
+
         }
     }
     return 0;   

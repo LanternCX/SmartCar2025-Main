@@ -22,16 +22,16 @@ low_pass_param centerLowPass;
  * @date 2025-04-06
  */
 void init_servo_pid(pid_param &pid){
-    pid.kp = 0.3;
+    pid.kp = 0.2;
     pid.ki = 0.00;
-    pid.kd = 0.20;
+    pid.kd = 0.0;
 
     pid.p_max = 30.0;
     pid.i_max = 30.0;
     pid.d_max = 30.0;
 
-    pid.out_min = -15.0;
-    pid.out_max = 15.0;
+    pid.out_min = -30.0;
+    pid.out_max = 30.0;
 
     pid.out_p = 0.0;
     pid.out_i = 0.0;
@@ -75,12 +75,14 @@ void set_servo_duty(int duty){
 void servo_to_center(int now, int target){
     int error = target - now;
     int duty = 90;
-    if(std::abs(error) < 50){
+    if(target != -1){
         duty = pid_slove(&pid, error);
-        std::cerr << "target: " << target << ' ';
-        std::cerr << "now: " << now << ' '; 
-        std::cerr << "duty: " << duty << ' ';
-        std::cerr << "error: " << error << '\n';
+    }
+    if(SERVO_DEBUG){
+        std::cerr << "servo-target: " << target << ' ';
+        std::cerr << "servo-now: " << now << ' '; 
+        std::cerr << "servo-duty: " << duty << ' ';
+        std::cerr << "servo-error: " << error << '\n';
     }
     set_servo_duty(90 + duty);
 }

@@ -1,6 +1,8 @@
 #ifndef MOTOR_H
 #define MOTOR_H
 
+#include "PID.h"
+
 /**
  * 后轮操作头文件
  */
@@ -31,8 +33,19 @@
 // 是否打开 Debug 模式
 #define MOTOR_DEBUG 0
 
-#include "PID.h"
+
+typedef struct {
+    /**
+     * 电机差速系数
+     */
+    float diff_factor;
+    /**
+     * 电机基础速度
+     */
+    float base_speed;
+} motor_params;
 void motor_init();
 void set_left_speed(int speed);
-void setRightSpeed(int speed);
+void set_right_speed(int speed);
+void motor_to_center(int now, int target, int speed);
 #endif
