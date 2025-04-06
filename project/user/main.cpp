@@ -1,7 +1,9 @@
+#include <fstream>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 #include "zf_common_headfile.h"
 
@@ -125,9 +127,56 @@ int motorTest(){
     }
     return 0;
 }
+
+int servoTest(){
+    cv::VideoCapture cap(0);
+    // cap.set(cv::CAP_PROP_FPS, 60);
+    if (!cap.isOpened()) {
+        std::cerr << "open cam 0 failed" << std::endl;
+        exit(0);
+        return -1;
+    }
+    ips200_init("/dev/fb0");
+
+    atexit(cleanup);
+    signal(SIGINT, sigint_handler);
+
+    servoInit();
+    motorInit();
+
+    cv::Mat frame;
+    int speed = 30;
+    while (true) {
+        cap >> frame;
+        if (frame.empty()) {
+            std::cerr << "无法读取视频帧或视频已结束！" << std::endl;
+            break;
+        }
+
+        cv::Mat gray;
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+        cv::Mat bin;
+
+        binarizeWithOtsu(gray, bin);
+        int center = lineDetection(bin, frame);
+
+        int width = bin.cols;
+        servoToCenter(center, width / 2);
+
+        setLeftSpeed(speed);
+        setRightSpeed(speed);
+
+        if(gpio_get_level(SWITCH_0)){
+            cv::resize(frame, frame, cv::Size(IMG_WIDTH, IMG_HEIGHT));
+            draw_rgb_img(frame);
+        }
+
+    }
+    return 0;
+}
 int main()   
 {
     std::cout << "version: 1.0.3" << std::endl;
-    return motorTest();
+    return servoTest();
 }
-

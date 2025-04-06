@@ -13,10 +13,10 @@ void drawBorder(cv::Mat& image) {
     cv::rectangle(image, cv::Point(0, 0), cv::Point(image.cols-1, image.rows-1), cv::Scalar(0), 1);
 }
 
-void lineDetection(cv::Mat binary, cv::Mat& src) {
+int lineDetection(cv::Mat binary, cv::Mat& src) {
     // 输入验证
     if (binary.empty() || src.empty() || binary.type() != CV_8UC1) {
-        return;
+        return -1;
     }
 
     // 确保图像尺寸匹配
@@ -41,7 +41,7 @@ void lineDetection(cv::Mat binary, cv::Mat& src) {
 
     // 选取扫描起始行
     int startRow = height - 10;
-    cv::line(src, cv::Point(0, startRow), cv::Point(width - 1, startRow), cv::Scalar(0, 255, 255), 5);
+    cv::line(src, cv::Point(0, startRow), cv::Point(width - 1, startRow), cv::Scalar(0, 255, 255), 2);
         
     int midCol = width / 2;
 
@@ -182,6 +182,11 @@ void lineDetection(cv::Mat binary, cv::Mat& src) {
         }
     }
 
+    std::vector<int> center = std::vector<int>(height - 1, -1);
+    for(int y = 0; y < height; y++){
+        center[y] = (rightX[y] + leftX[y]) / 2;
+    }
+
     // 画出边线
     for (int y = 0; y < height; y++) {
         if (leftX[y] != -1) {
@@ -194,4 +199,5 @@ void lineDetection(cv::Mat binary, cv::Mat& src) {
             cv::circle(src, cv::Point((rightX[y] + leftX[y]) / 2, y), 2, cv::Scalar(0, 255, 0), -1);
         }
     }
+    return center[height - 15];
 }

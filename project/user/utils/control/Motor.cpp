@@ -41,8 +41,8 @@ void initMotorPID(pid_param_t &pid){
     pid.i_max = 30.0;
     pid.d_max = 30.0;
 
-    pid.out_min = -50.0;
-    pid.out_max = 50.0;
+    pid.out_min = -30.0;
+    pid.out_max = 30.0;
     
     pid.out_p = 0.0;
     pid.out_i = 0.0;
@@ -58,13 +58,13 @@ void initMotorLowPass(LowPassFilter &lowpass){
 }
 
 void leftMotorRun(int duty, int dir){
-    duty = min(duty, 100);
+    duty = min(duty, 30);
     gpio_set_level(MOTOR1_DIR, dir);
     pwm_set_duty(MOTOR1_PWM, duty * (MOTOR1_PWM_DUTY_MAX / 100));
 }
 
 void rightMotorRun(int duty, int dir){
-    duty = min(duty, 100);
+    duty = min(duty, 30);
     gpio_set_level(MOTOR2_DIR, dir);
     pwm_set_duty(MOTOR2_PWM, duty * (MOTOR2_PWM_DUTY_MAX / 100));
 }
@@ -80,8 +80,8 @@ void motorInit(){
     initMotorLowPass(leftLowPass);
     initMotorLowPass(rightLowPass);
 
-    leftMotorRun(15, 1);
-    rightMotorRun(15, 1);
+    // leftMotorRun(15, 1);
+    // rightMotorRun(15, 1);
     
     if(MOTOR_DEBUG){
         std::cout << "Motor Param:" << '\n';
@@ -93,14 +93,14 @@ void motorInit(){
 }
 
 void setLeftSpeed(int speed){
-    float now = encoder_get_count(ENCODER_2);
+    float now = -encoder_get_count(ENCODER_2);
     now = lowPassFilter(&leftLowPass, now);
     float error = speed - now;
     float det = increment_pid_solve(&leftPID, error);
 
     leftDuty += det;
     
-    leftMotorRun(abs(leftDuty), leftDuty > 0 ? 1 : -1);
+    leftMotorRun(abs(leftDuty), leftDuty > 0 ? 0 : 1);
 
     if(MOTOR_DEBUG){
         static int cnt1 = 0;
@@ -118,14 +118,14 @@ void setLeftSpeed(int speed){
 }
 
 void setRightSpeed(int speed){
-    float now = -encoder_get_count(ENCODER_1);
+    float now = encoder_get_count(ENCODER_1);
     now = lowPassFilter(&rightLowPass, now);
     float error = speed - now;
     float det = increment_pid_solve(&rightPID, error);
 
     rightDuty += det;
 
-    rightMotorRun(abs(rightDuty), rightDuty > 0 ? 1 : -1);
+    rightMotorRun(abs(rightDuty), rightDuty > 0 ? 0 : 1);
 
     if(MOTOR_DEBUG){
         static int cnt2 = 0;
