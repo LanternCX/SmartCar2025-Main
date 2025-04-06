@@ -9,6 +9,9 @@ typedef struct {
     float p_max; //integrator_max
     float d_max; //integrator_max
 
+    float out_min;
+    float out_max;
+
     float low_pass;
 
     float out_p;
@@ -24,9 +27,5 @@ typedef struct {
 float pid_solve(pid_param_t *pid, float error);
 
 float increment_pid_solve(pid_param_t *pid, float error);
-
-float bangbang_pid_solve(pid_param_t *pid, float error);
-
-float changable_pid_solve(pid_param_t *pid, float error);
 
 #endif /* _PID_H_ */

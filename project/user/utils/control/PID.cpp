@@ -18,7 +18,7 @@ float pid_solve(pid_param_t *pid, float error) {
 
     if (pid->ki != 0) pid->out_i = minmax(pid->out_i, -pid->i_max / pid->ki, pid->i_max / pid->ki);
 
-    return pid->kp * pid->out_p + pid->ki * pid->out_i + pid->kd * pid->out_d;
+    return minmax(pid->kp * pid->out_p + pid->ki * pid->out_i + pid->kd * pid->out_d, pid->out_min, pid->out_max);
 }
 
 // 增量式 PID
@@ -30,5 +30,5 @@ float increment_pid_solve(pid_param_t *pid, float error) {
     pid->pre_pre_error = pid->pre_error;
     pid->pre_error = error;
 
-    return pid->out_p + pid->out_i + pid->out_d;
+    return minmax(pid->out_p + pid->out_i + pid->out_d, pid->out_min, pid->out_max);
 }

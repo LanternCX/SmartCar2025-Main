@@ -34,31 +34,37 @@ float max(float a, float b){
 
 void initMotorPID(pid_param_t &pid){
     pid.kp = 0.030;
-    pid.ki = 0.045;
+    pid.ki = 0.035;
     pid.kd = 0.025;
+
     pid.p_max = 30.0;
     pid.i_max = 30.0;
     pid.d_max = 30.0;
+
+    pid.out_min = -50.0;
+    pid.out_max = 50.0;
+    
     pid.out_p = 0.0;
     pid.out_i = 0.0;
     pid.out_d = 0.0;
+
     pid.pre_error = 0.0;
     pid.pre_pre_error = 0.0;
 }
 
-void initLowPass(LowPassFilter &lowpass){
+void initMotorLowPass(LowPassFilter &lowpass){
     lowpass.alpha = 0.3;
     lowpass.last = 0.0;
 }
 
 void leftMotorRun(int duty, int dir){
-    duty = min(duty, 40);
+    duty = min(duty, 100);
     gpio_set_level(MOTOR1_DIR, dir);
     pwm_set_duty(MOTOR1_PWM, duty * (MOTOR1_PWM_DUTY_MAX / 100));
 }
 
 void rightMotorRun(int duty, int dir){
-    duty = min(duty, 40);
+    duty = min(duty, 100);
     gpio_set_level(MOTOR2_DIR, dir);
     pwm_set_duty(MOTOR2_PWM, duty * (MOTOR2_PWM_DUTY_MAX / 100));
 }
@@ -71,8 +77,8 @@ void motorInit(){
     initMotorPID(leftPID);
     initMotorPID(rightPID);
 
-    initLowPass(leftLowPass);
-    initLowPass(rightLowPass);
+    initMotorLowPass(leftLowPass);
+    initMotorLowPass(rightLowPass);
 
     leftMotorRun(15, 1);
     rightMotorRun(15, 1);
