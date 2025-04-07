@@ -7,6 +7,7 @@
 #include "Vision.h"
 #include "Display.h"
 #include "Motor.h"
+#include "Control.h"
 #include "Servo.h"
 
 /**
@@ -60,7 +61,10 @@ int run() {
     // Init Motor
     motor_init();
 
-    int speed = 150;
+    // Init Controller
+    control_init();
+
+    int speed = 30;
     while (true) {
         // Read Frame
         cap >> frame;
@@ -82,11 +86,8 @@ int run() {
 
         int width = bin.cols;
 
-        // Servo control
-        servo_to_center(center, width / 2);
-
-        // Motor control
-        motor_to_center(center, width / 2, speed);
+        // Control
+        to_center(center, width / 2, speed);
 
         // Debug
         if(gpio_get_level(SWITCH_0)){
@@ -124,5 +125,5 @@ int test(){
 }
 int main() {
     std::cout << "version: 1.0.3" << std::endl;
-    return test();
+    return run();
 }

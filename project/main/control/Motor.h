@@ -47,5 +47,4 @@ typedef struct {
 void motor_init();
 void set_left_speed(int speed);
 void set_right_speed(int speed);
-void motor_to_center(int now, int target, int speed);
 #endif

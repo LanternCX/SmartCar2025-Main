@@ -16,3 +16,27 @@ float minmax(float a, float min, float max){
     }
     return a;
 }
+
+/**
+ * @brief 取最小值
+ * @param a
+ * @param b
+ * @return a 和 b 的最小值
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
+float min(float a, float b){
+    return a > b ? b : a;
+}
+
+/**
+ * @brief 取最大值
+ * @param a
+ * @param b
+ * @return a 和 b 的最大值
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
+float max(float a, float b){
+    return a < b ? b : a;
+}

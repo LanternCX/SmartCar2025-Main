@@ -30,7 +30,8 @@ typedef struct {
      */
     float base_duty;
 } servo_params;
-void servo_to_center(int center, int width);
+
 void servo_init();
 void set_servo_duty(int duty);
+servo_params get_servo_param();
 #endif

@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "Motor.h"
 #include "zf_common_headfile.h"
 
 #include "Servo.h"
@@ -12,36 +13,9 @@
  */
 
 struct pwm_info servo_pwm_info;
+servo_params servo_param;
 pid_param pid;
 low_pass_param centerLowPass;
-servo_params servo_param;
-
-/**
- * @brief 初始化 PID 控制器
- * @param pid PID 控制器参数结构体指针
- * @return none
- * @author Cao Xin
- * @date 2025-04-06
- */
-void init_servo_pid(pid_param &pid){
-    pid.kp = 0.2;
-    pid.ki = 0.00;
-    pid.kd = 0.0;
-
-    pid.p_max = 30.0;
-    pid.i_max = 30.0;
-    pid.d_max = 30.0;
-
-    pid.out_min = -30.0;
-    pid.out_max = 30.0;
-
-    pid.out_p = 0.0;
-    pid.out_i = 0.0;
-    pid.out_d = 0.0;
-
-    pid.pre_error = 0.0;
-    pid.pre_pre_error = 0.0;
-}
 
 /**
  * @brief 初始化低通滤波器
@@ -68,29 +42,6 @@ void set_servo_duty(int duty){
 }
 
 /**
- * @brief 寻线到中线
- * @param now 当前中线位置
- * @param target 目标中线位置 一般为 width / 2
- * @return none
- * @author Cao Xin
- * @date 2025-04-06
- */
-void servo_to_center(int now, int target){
-    int error = target - now;
-    int duty = servo_param.base_duty;
-    if(target != -1){
-        duty = pid_slove(&pid, error);
-    }
-    if(SERVO_DEBUG){
-        std::cerr << "servo-target: " << target << ' ';
-        std::cerr << "servo-now: " << now << ' '; 
-        std::cerr << "servo-duty: " << duty << ' ';
-        std::cerr << "servo-error: " << error << '\n';
-    }
-    set_servo_duty(90 + duty);
-}
-
-/**
  * @brief 舵机初始化
  * @return none
  * @author Cao Xin
@@ -99,8 +50,11 @@ void servo_to_center(int now, int target){
 void servo_init(){
     // 获取PWM设备信息
     pwm_get_dev_info(SERVO_MOTOR1_PWM, &servo_pwm_info);
-    init_servo_pid(pid);
     init_servo_low_pass(centerLowPass);
     servo_param.base_duty = 87;
     set_servo_duty(servo_param.base_duty);
+}
+
+servo_params get_servo_param(){
+    return servo_param;
 }

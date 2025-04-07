@@ -1,12 +1,12 @@
 #include <algorithm>
 #include <iostream>
 
+#include "zf_common_headfile.h"
+
 #include "Motor.h"
 #include "PID.h"
 #include "LowPass.h"
-#include "zf_common_headfile.h"
-#include "zf_common_typedef.h"
-#include "zf_device_ips200_fb.h"
+#include "Math.h"
 
 /**
  * 后轮操作相关函数
@@ -19,7 +19,6 @@ struct pwm_info motor_2_pwm_info;
 // PID
 pid_param left_pid;
 pid_param right_pid;
-pid_param dir_pid;
 
 // Low Pass Filter
 low_pass_param left_low_pass;
@@ -28,30 +27,6 @@ low_pass_param right_low_pass;
 // Duty
 static int left_duty = 10;
 static int right_duty = 10;
-
-/**
- * @brief 取最小值
- * @param a
- * @param b
- * @return a 和 b 的最小值
- * @author Cao Xin
- * @date 2025-04-05
- */
-float min(float a, float b){
-    return a > b ? b : a;
-}
-
-/**
- * @brief 取最大值
- * @param a
- * @param b
- * @return a 和 b 的最大值
- * @author Cao Xin
- * @date 2025-04-05
- */
-float max(float a, float b){
-    return a < b ? b : a;
-}
 
 /**
  * @brief 初始化 PID 控制器
@@ -71,33 +46,6 @@ void init_motor_pid(pid_param &pid){
 
     pid.out_min = -30.0;
     pid.out_max = 30.0;
-    
-    pid.out_p = 0.0;
-    pid.out_i = 0.0;
-    pid.out_d = 0.0;
-
-    pid.pre_error = 0.0;
-    pid.pre_pre_error = 0.0;
-}
-
-/**
- * @brief 初始化方向 PID 控制器
- * @param pid PID 控制器参数结构体指针
- * @return none
- * @author Cao Xin
- * @date 2025-04-05
- */
-void init_dir_pid(pid_param &pid){
-    pid.kp = 0.5;
-    pid.ki = 0.00;
-    pid.kd = 0.00;
-
-    pid.p_max = 60.0;
-    pid.i_max = 60.0;
-    pid.d_max = 60.0;
-
-    pid.out_min = -200.0;
-    pid.out_max = 200.0;
     
     pid.out_p = 0.0;
     pid.out_i = 0.0;
@@ -161,7 +109,6 @@ void motor_init(){
     // 初始化左右电机 PID 控制器
     init_motor_pid(left_pid);
     init_motor_pid(right_pid);
-    init_dir_pid(dir_pid);
 
     // 初始化左右编码器低通滤波器
     init_motor_low_pass(left_low_pass);
@@ -253,20 +200,4 @@ void set_right_speed(int speed){
             ips200_draw_point((10 + i), (uint16)max(220 - speed / 3.0, 1), 0xF800);
         }
     }
-}
-
-void motor_to_center(int now, int target, int speed){
-    int error = target - now;
-    int det = 0;
-    if(target != -1){
-        det = pid_slove(&dir_pid, error);
-    }
-    if(MOTOR_DEBUG){
-        std::cerr << "speed-target: " << target << ' ';
-        std::cerr << "speed-now: " << now << ' '; 
-        std::cerr << "speed-det: " << det << ' ';
-        std::cerr << "speed-error: " << error << '\n';
-    }
-    set_left_speed(speed + det);
-    set_right_speed(speed - det);
 }
