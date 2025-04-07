@@ -1,19 +1,13 @@
 #include <opencv2/opencv.hpp>
+#include <string>
 
 #include "zf_common_headfile.h"
 
-#include "Image.h"
+#include "Main.h"
+#include "Vision.h"
 #include "Display.h"
 #include "Motor.h"
 #include "Servo.h"
-#include "zf_device_ips200_fb.h"
-
-#define KEY_0       "/dev/zf_driver_gpio_key_0"
-#define KEY_1       "/dev/zf_driver_gpio_key_1"
-#define KEY_2       "/dev/zf_driver_gpio_key_2"
-#define KEY_3       "/dev/zf_driver_gpio_key_3"
-#define SWITCH_0    "/dev/zf_driver_gpio_switch_0"
-#define SWITCH_1    "/dev/zf_driver_gpio_switch_1"
 
 /**
  * @brief 程序退出时清理函数
@@ -105,7 +99,30 @@ int run() {
     }
     return 0;   
 }
+
+int test(){
+    // Init servo
+    servo_init();
+
+    // Init Display
+    ips200_init("/dev/fb0");
+
+    // Register clean up function 
+    atexit(cleanup);
+
+    // Register SIGINT handler 
+    signal(SIGINT, sigint_handler);
+
+    while(1){
+        static int x = 90;
+        x += (!gpio_get_level(KEY_0)) * (gpio_get_level(SWITCH_0) ? 1 : -1);
+        ips200_clear();
+        ips200_show_string(10, 20, std::string("Angle: " + std::to_string(x)).c_str());
+        set_servo_duty(x);
+        system_delay_ms(100);
+    }
+}
 int main() {
     std::cout << "version: 1.0.3" << std::endl;
-    return run();
+    return test();
 }

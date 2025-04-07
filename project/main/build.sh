@@ -15,7 +15,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-cmake ../user
+cmake ../main
 # 检查 cmake 命令是否执行成功
 if [ $? -ne 0 ]; then
     echo "cmake 命令执行失败。"
