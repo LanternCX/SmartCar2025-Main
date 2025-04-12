@@ -2,7 +2,9 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <vector>
+
 #include "Line.h"
+#include "Perspective.h"
 
 /**
  * 扫线相关函数
@@ -32,7 +34,7 @@ void draw_border(cv::Mat& image) {
  * @author Cao Xin
  * @date 2025-04-03
  */
-int line_detection(cv::Mat binary, cv::Mat& src) {
+int line_detection(cv::Mat binary, cv::Mat& src, cv::Mat& black) {
     // 输入验证
     if (binary.empty() || src.empty() || binary.type() != CV_8UC1) {
         return -1;
@@ -60,7 +62,7 @@ int line_detection(cv::Mat binary, cv::Mat& src) {
     std::vector<int> rightX = std::vector<int>(height - 1, -1);
 
     // 选取扫描起始行
-    int startRow = height - 200;
+    int startRow = height - 10;
     cv::line(src, cv::Point(0, startRow), cv::Point(width - 1, startRow), cv::Scalar(255, 255, 0), 2);
     cv::line(src, cv::Point(width / 2, startRow), cv::Point(width / 2, 1), cv::Scalar(255, 255, 0), 2);
         
@@ -203,6 +205,7 @@ int line_detection(cv::Mat binary, cv::Mat& src) {
         }
     }
 
+    // 处理出中线
     std::vector<int> center = std::vector<int>(height - 1, -1);
     for(int y = 0; y < height; y++){
         center[y] = (rightX[y] + leftX[y]) / 2;
@@ -217,8 +220,14 @@ int line_detection(cv::Mat binary, cv::Mat& src) {
             cv::circle(src, cv::Point(rightX[y], y), 2, cv::Scalar(255, 0, 0), -1);
         }
         if (leftX[y] != -1 && rightX[y] != -1) {
-            cv::circle(src, cv::Point((rightX[y] + leftX[y]) / 2, y), 2, cv::Scalar(0, 255, 0), -1);
+            cv::circle(src, cv::Point(center[y], y), 2, cv::Scalar(0, 255, 0), -1);
         }
     }
-    return center[startRow];
+
+    // 执行逆透视并画出图像
+    get_perspective_line(black, leftX);
+    get_perspective_line(black, rightX);
+    std::vector<int> newCenter = get_perspective_line(black, center);
+    // 返回中线
+    return newCenter[newCenter.size() - 10];
 }

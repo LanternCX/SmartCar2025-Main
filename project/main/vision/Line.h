@@ -7,5 +7,5 @@
 
 #include <opencv2/opencv.hpp>
 #include <vector>
-int line_detection(cv::Mat binary, cv::Mat& src);
+int line_detection(cv::Mat binary, cv::Mat& src, cv::Mat& black);
 #endif

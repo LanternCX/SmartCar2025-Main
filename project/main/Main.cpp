@@ -1,6 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
+#include "Perspective.h"
 #include "zf_common_headfile.h"
 
 #include "Main.h"
@@ -9,6 +10,7 @@
 #include "Motor.h"
 #include "Control.h"
 #include "Servo.h"
+#include "Time.h"
 
 /**
  * @brief 程序退出时清理函数
@@ -64,6 +66,8 @@ int run() {
     // Init Controller
     control_init();
 
+    init_perspective();
+
     int speed = 45;
     while (true) {
         // Read Frame
@@ -72,17 +76,25 @@ int run() {
             std::cerr << "Read frame failed" << std::endl;
             break;
         }
-
+        
+        int a = get_time();
         // Cvt to gray
         cv::Mat gray;
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+        int b = get_time();
+        
 
         // Binarize
         cv::Mat bin;
         otsu_binarize(gray, bin);
-
+        
+        
         // Get Center
-        int center = line_detection(bin, frame);
+        cv::Mat black = cv::Mat::zeros(frame.size(), CV_8UC1);
+        int center = line_detection(bin, frame, black);
+
+
+        std::cout << "time spend: " << b - a << '\n';
 
         int width = bin.cols;
 
@@ -92,11 +104,11 @@ int run() {
         // Debug
         if(gpio_get_level(SWITCH_0)){
             cv::resize(frame, frame, cv::Size(IMG_WIDTH, IMG_HEIGHT));
-            draw_rgb_img(frame);
-            // draw_gray_img(bin);
+            // draw_rgb_img(frame);
+            cv::resize(black, black, cv::Size(IMG_WIDTH, IMG_HEIGHT));
+            draw_gray_img(black);
         }else{
             ips200_clear();
-
         }
     }
     return 0;   
