@@ -40,6 +40,7 @@ int line_detection(cv::Mat binary, cv::Mat& src) {
 
     // 确保图像尺寸匹配
     if (binary.size() != src.size()) {
+        std::cout << "resize\n";
         cv::resize(src, src, binary.size());
     }
 
@@ -59,8 +60,9 @@ int line_detection(cv::Mat binary, cv::Mat& src) {
     std::vector<int> rightX = std::vector<int>(height - 1, -1);
 
     // 选取扫描起始行
-    int startRow = height - 10;
-    cv::line(src, cv::Point(0, startRow), cv::Point(width - 1, startRow), cv::Scalar(0, 255, 255), 2);
+    int startRow = height - 200;
+    cv::line(src, cv::Point(0, startRow), cv::Point(width - 1, startRow), cv::Scalar(255, 255, 0), 2);
+    cv::line(src, cv::Point(width / 2, startRow), cv::Point(width / 2, 1), cv::Scalar(255, 255, 0), 2);
         
     int midCol = width / 2;
 
@@ -218,5 +220,5 @@ int line_detection(cv::Mat binary, cv::Mat& src) {
             cv::circle(src, cv::Point((rightX[y] + leftX[y]) / 2, y), 2, cv::Scalar(0, 255, 0), -1);
         }
     }
-    return center[height - 15];
+    return center[startRow];
 }

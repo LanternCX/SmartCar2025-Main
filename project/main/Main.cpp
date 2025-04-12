@@ -64,7 +64,7 @@ int run() {
     // Init Controller
     control_init();
 
-    int speed = 30;
+    int speed = 45;
     while (true) {
         // Read Frame
         cap >> frame;
@@ -93,6 +93,7 @@ int run() {
         if(gpio_get_level(SWITCH_0)){
             cv::resize(frame, frame, cv::Size(IMG_WIDTH, IMG_HEIGHT));
             draw_rgb_img(frame);
+            // draw_gray_img(bin);
         }else{
             ips200_clear();
 
