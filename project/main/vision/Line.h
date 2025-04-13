@@ -7,5 +7,12 @@
 
 #include <opencv2/opencv.hpp>
 #include <vector>
-int line_detection(cv::Mat binary, cv::Mat& src, cv::Mat& black);
+
+typedef struct{
+    std::vector<int> left;
+    std::vector<int> right;
+    std::vector<int> center;
+}line_result;
+
+line_result line_detection(cv::Mat binary, cv::Mat& src);
 #endif

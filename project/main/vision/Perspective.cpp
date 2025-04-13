@@ -1,4 +1,5 @@
 #include <opencv2/core.hpp>
+#include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>
@@ -28,67 +29,55 @@ void init_perspective(){
     perspectiveTransform = getPerspectiveTransform(src, dst);
 }
 
-cv::Mat get_perspective(cv::Mat image){
+cv::Mat get_perspective_img(cv::Mat image){
     cv::Mat warped;
     warpPerspective(image, warped, perspectiveTransform, cv::Size(FRAME_WIDTH, FRAME_HEIGHT));
     // cv::warpPerspective(image, warped, perspectiveTransform, image.size());
     return warped;
 }
 
-std::vector<int> get_perspective_line(cv::Mat& image, const std::vector<int>& line) {
-    // 确保输入图像是黑色的
-    CV_Assert(image.type() == CV_8UC3 || image.type() == CV_8UC1);
-    
-    float height = image.rows;
-    float width = image.cols;
-    
-    // 计算图像中心点并进行透视变换
+std::vector<int> get_perspective_line(const std::vector<int>& line, cv::Size size) {
+    float height = size.height;
+    float width = size.width;
+
+    // 计算中心偏移量，方便对齐
     cv::Point2f center = get_perspective_pt(cv::Point2f(width / 2, height / 2));
-    
-    // 计算水平偏移量，使变换后的中心对齐原图像中线
     float dx = center.x - width / 2;
+    float dy = center.y - height / 2;
+    
+    // 原点集 
+    std::vector<cv::Point2f> src;
+    for(size_t y = 0; y < line.size(); y++) {
+        src.push_back(cv::Point2f(line[y], y));
+    }
 
-    // 创建输出数组
-    std::vector<int> transformedLine(line.size());
-
-    // 处理每个点
-    for (size_t y = 0; y < line.size(); ++y) {
-        if (line[y] < 0) {
-            transformedLine[y] = -1;
-            continue;
-        }
-        // 原始点
-        cv::Point2f srcPoint(line[y], static_cast<float>(y));
+    // 转换后的点集
+    std::vector<cv::Point2f> dst;
+    cv::perspectiveTransform(src, dst, perspectiveTransform);
+    
+    // 初始化结果数组，大小与输入line相同
+    std::vector<int> res(line.size(), -1);
+    
+    // 将变换后的点映射回整数数组
+    for(size_t i = 0; i < dst.size(); i++) {
+        int newX = static_cast<int>(std::round( dst[i].x - dx));
+        int newY = static_cast<int>(std::round(dst[i].y - dy));
         
-        // 进行透视变换
-        cv::Point2f transformedPoint = get_perspective_pt(srcPoint);
-        
-        // 对齐到中线
-        transformedPoint.x -= dx;
-
-        // 存储到输出数组
-        transformedLine[y] = static_cast<int>(std::round(transformedPoint.x));
-        
-        // 在图像上绘制点（如果在图像范围内）
-        if (transformedPoint.x >= 0 && transformedPoint.x < image.cols &&
-            transformedPoint.y >= 0 && transformedPoint.y < image.rows) {
-            if (image.type() == CV_8UC3) {
-                image.at<cv::Vec3b>(y, static_cast<int>(transformedPoint.x)) = cv::Vec3b(255, 255, 255);
-            } else {
-                image.at<uchar>(y, static_cast<int>(transformedPoint.x)) = 255;
-            }
+        if(newY >= 0 && newY < static_cast<int>(res.size()) && 
+           newX >= 0 && newX < width) {
+            res[newY] = newX;
         }
     }
-    
-    return transformedLine;
+    return res;
 }
 
 cv::Point2f get_perspective_pt(cv::Point2f src){
     // 转换为输入点数组
     std::vector<cv::Point2f> srcPoints = {src};
-    std::vector<cv::Point2f> dstPoints(srcPoints);
+    std::vector<cv::Point2f> dstPoints;
     
     // 执行逆透视变换
     cv::perspectiveTransform(srcPoints, dstPoints, perspectiveTransform);
+
     return dstPoints[0];
 }

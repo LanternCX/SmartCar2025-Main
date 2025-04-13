@@ -69,7 +69,7 @@ void to_center(int now, int target, int speed){
 
     if(SERVO_DEBUG){
         // std::cerr << "servo-target: " << target << ' ';
-        // std::cerr << "servo-now: " << now << ' '; 
+        std::cerr << "servo-now: " << now << ' '; 
         std::cerr << "servo-duty-det: " << servo_duty_det << ' ';
         std::cerr << "servo-error: " << error << ' ';
         std::cerr << "speed-det: " << det << '\n';

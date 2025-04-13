@@ -77,39 +77,13 @@ int run() {
             break;
         }
         
-        int a = get_time();
-        // Cvt to gray
-        cv::Mat gray;
-        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-        int b = get_time();
-        
+        int center = process_img(frame);
 
-        // Binarize
-        cv::Mat bin;
-        otsu_binarize(gray, bin);
-        
-        
-        // Get Center
-        cv::Mat black = cv::Mat::zeros(frame.size(), CV_8UC1);
-        int center = line_detection(bin, frame, black);
-
-
-        std::cout << "time spend: " << b - a << '\n';
-
-        int width = bin.cols;
+        int width = frame.cols;
 
         // Control
         to_center(center, width / 2, speed);
 
-        // Debug
-        if(gpio_get_level(SWITCH_0)){
-            cv::resize(frame, frame, cv::Size(IMG_WIDTH, IMG_HEIGHT));
-            // draw_rgb_img(frame);
-            cv::resize(black, black, cv::Size(IMG_WIDTH, IMG_HEIGHT));
-            draw_gray_img(black);
-        }else{
-            ips200_clear();
-        }
     }
     return 0;   
 }

@@ -3,8 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#include "Line.h"
-#include "Perspective.h"
+#include "Vision.h"
 
 /**
  * 扫线相关函数
@@ -34,11 +33,8 @@ void draw_border(cv::Mat& image) {
  * @author Cao Xin
  * @date 2025-04-03
  */
-int line_detection(cv::Mat binary, cv::Mat& src, cv::Mat& black) {
-    // 输入验证
-    if (binary.empty() || src.empty() || binary.type() != CV_8UC1) {
-        return -1;
-    }
+line_result line_detection(cv::Mat binary, cv::Mat& src) {
+    line_result res;
 
     // 确保图像尺寸匹配
     if (binary.size() != src.size()) {
@@ -95,7 +91,6 @@ int line_detection(cv::Mat binary, cv::Mat& src, cv::Mat& black) {
         for(int i = startRow; i > 0; i--){
             if(frame[getIdx(i, 0)] == 255 && frame[getIdx(i - 1, 0)] == 0){
                 leftStart = cv::Point(0, i - 1);
-                std::cout << "found left idx: " << i << '\n';
                 break;
             }
         }
@@ -106,7 +101,6 @@ int line_detection(cv::Mat binary, cv::Mat& src, cv::Mat& black) {
         for(int i = startRow; i > 0; i--){
             if(frame[getIdx(i, width - 1)] == 255 && frame[getIdx(i - 1, width - 1)] == 0){
                 rightStart = cv::Point(width - 1, i - 1);
-                std::cout << "found right idx: " << i << '\n';
                 break;
             }
         }
@@ -211,23 +205,22 @@ int line_detection(cv::Mat binary, cv::Mat& src, cv::Mat& black) {
         center[y] = (rightX[y] + leftX[y]) / 2;
     }
 
-    // 画出边线
-    for (int y = 0; y < height; y++) {
-        if (leftX[y] != -1) {
-            cv::circle(src, cv::Point(leftX[y], y), 2, cv::Scalar(0, 0, 255), -1);
-        }
-        if (rightX[y] != -1) {
-            cv::circle(src, cv::Point(rightX[y], y), 2, cv::Scalar(255, 0, 0), -1);
-        }
-        if (leftX[y] != -1 && rightX[y] != -1) {
-            cv::circle(src, cv::Point(center[y], y), 2, cv::Scalar(0, 255, 0), -1);
+    if(VISION_DEBUG){
+        // 画出边线
+        for (int y = 0; y < height; y++) {
+            if (leftX[y] != -1) {
+                cv::circle(src, cv::Point(leftX[y], y), 2, cv::Scalar(0, 0, 255), -1);
+            }
+            if (rightX[y] != -1) {
+                cv::circle(src, cv::Point(rightX[y], y), 2, cv::Scalar(255, 0, 0), -1);
+            }
+            if (leftX[y] != -1 && rightX[y] != -1) {
+                cv::circle(src, cv::Point((rightX[y] + leftX[y]) / 2, y), 2, cv::Scalar(0, 255, 0), -1);
+            }
         }
     }
 
-    // 执行逆透视并画出图像
-    get_perspective_line(black, leftX);
-    get_perspective_line(black, rightX);
-    std::vector<int> newCenter = get_perspective_line(black, center);
+    res = {leftX, rightX, center};
     // 返回中线
-    return newCenter[newCenter.size() - 10];
+    return res;
 }
