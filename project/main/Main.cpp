@@ -1,6 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
+#include "Perspective.h"
 #include "zf_common_headfile.h"
 
 #include "Main.h"
@@ -9,6 +10,7 @@
 #include "Motor.h"
 #include "Control.h"
 #include "Servo.h"
+#include "Time.h"
 
 /**
  * @brief 程序退出时清理函数
@@ -60,11 +62,13 @@ int run() {
 
     // Init Motor
     motor_init();
-
+    
     // Init Controller
-    control_init();
+    int speed = 90;
+    control_init(speed);
 
-    int speed = 45;
+    init_perspective();
+
     while (true) {
         // Read Frame
         cap >> frame;
@@ -72,32 +76,16 @@ int run() {
             std::cerr << "Read frame failed" << std::endl;
             break;
         }
+        
+        vision_result res = process_img(frame);
+        int center = res.center;
+        Type type = res.type;
 
-        // Cvt to gray
-        cv::Mat gray;
-        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-
-        // Binarize
-        cv::Mat bin;
-        otsu_binarize(gray, bin);
-
-        // Get Center
-        int center = line_detection(bin, frame);
-
-        int width = bin.cols;
+        int width = frame.cols;
 
         // Control
-        to_center(center, width / 2, speed);
-
-        // Debug
-        if(gpio_get_level(SWITCH_0)){
-            cv::resize(frame, frame, cv::Size(IMG_WIDTH, IMG_HEIGHT));
-            draw_rgb_img(frame);
-            // draw_gray_img(bin);
-        }else{
-            ips200_clear();
-
-        }
+        set_statue(type);
+        to_center(center, width / 2);
     }
     return 0;   
 }
