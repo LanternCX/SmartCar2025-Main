@@ -5,7 +5,16 @@
 #include "Perspective.h"
 
 #define VISION_DEBUG 1
+enum Type {
+    LINE,
+    CURVE,
+};
 
-int process_img(cv::Mat frame);
+typedef struct{
+    int center;
+    Type type;
+}vision_result;
+
+vision_result process_img(cv::Mat frame);
 
 #endif

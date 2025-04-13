@@ -62,13 +62,13 @@ int run() {
 
     // Init Motor
     motor_init();
-
+    
     // Init Controller
-    control_init();
+    int speed = 90;
+    control_init(speed);
 
     init_perspective();
 
-    int speed = 45;
     while (true) {
         // Read Frame
         cap >> frame;
@@ -77,13 +77,15 @@ int run() {
             break;
         }
         
-        int center = process_img(frame);
+        vision_result res = process_img(frame);
+        int center = res.center;
+        Type type = res.type;
 
         int width = frame.cols;
 
         // Control
-        to_center(center, width / 2, speed);
-
+        set_statue(type);
+        to_center(center, width / 2);
     }
     return 0;   
 }

@@ -3,8 +3,12 @@
 #include "LowPass.h"
 #include "Motor.h"
 #include "Servo.h"
+#include "Vision.h"
+#include "Control.h"
+
 pid_param dir_pid;
-low_pass_param low_pass;
+low_pass_param dir_low_pass;
+speed_param speed;
 
 /**
  * @brief 初始化 PID 控制器
@@ -16,9 +20,12 @@ low_pass_param low_pass;
 void init_dir_pid(pid_param &pid){
     // v 40 p 0.10 d 0.
     // lowpass 0.5 p 0.2 d 0.4
-    pid.kp = 0.20;
+    // v 60 - 10 lowpass 0.5 0.1 p 0.6 d 0.4 line -10
+    // v 70 - 20 lowpass 0.5 0.1 p 0.4 d 0.4 line -20
+    // v 80 - 30 lowpass 0.5 0.1 p 0.4 d 0.6 line -70
+    pid.kp = 0.40;
     pid.ki = 0.00;
-    pid.kd = 0.4;
+    pid.kd = 0.6;
 
     pid.p_max = 30.0;
     pid.i_max = 30.0;
@@ -39,9 +46,11 @@ void init_dir_lowpass(low_pass_param &lowpass){
     lowpass.alpha = 0.5;
 }
 
-void control_init(){
+void control_init(int v){
     init_dir_pid(dir_pid);
-    init_dir_lowpass(low_pass);
+    init_dir_lowpass(dir_low_pass);
+    speed.line_speed = v;
+    speed.curve_speed = v - 30;
 }
 
 /**
@@ -52,9 +61,9 @@ void control_init(){
  * @author Cao Xin
  * @date 2025-04-06
  */
-void to_center(int now, int target, int speed){
+void to_center(int now, int target){
     int error = target - now;
-    error = low_pass_filter(&low_pass, error);
+    error = low_pass_filter(&dir_low_pass, error);
     int servo_duty_det = 0;
     if(target != -1){
         servo_duty_det = pid_slove(&dir_pid, error);
@@ -62,10 +71,10 @@ void to_center(int now, int target, int speed){
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
     
     // 计算差速比 10% pre 5 degree 
-    int det = speed * (servo_duty_det / 5.0 * 0.1);
+    int det = speed.current * (servo_duty_det / 5.0 * 0.1);
     // det = 0;
-    set_left_speed(speed + det);
-    set_right_speed(speed - det);
+    set_left_speed(speed.current + det);
+    set_right_speed(speed.current - det);
 
     if(SERVO_DEBUG){
         // std::cerr << "servo-target: " << target << ' ';
@@ -73,5 +82,16 @@ void to_center(int now, int target, int speed){
         std::cerr << "servo-duty-det: " << servo_duty_det << ' ';
         std::cerr << "servo-error: " << error << ' ';
         std::cerr << "speed-det: " << det << '\n';
+    }
+}
+
+void set_statue(Type type){
+    if(type == LINE){
+        dir_low_pass.alpha = 0.1;
+        speed.current = speed.line_speed;
+    }
+    if(type == CURVE){
+        dir_low_pass.alpha = 0.5;
+        speed.current = speed.curve_speed;
     }
 }
