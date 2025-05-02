@@ -9,6 +9,6 @@ typedef struct{
     int current;
 } speed_param;
 void to_center(int now, int target);
-void control_init(int v);
+void control_init(int line_speed, int curve_speed);
 void set_statue(Type type);
 #endif

@@ -64,8 +64,7 @@ int run() {
     motor_init();
     
     // Init Controller
-    int speed = 90;
-    control_init(speed);
+    control_init(100, 70);
 
     init_perspective();
 
@@ -91,28 +90,10 @@ int run() {
 }
 
 int test(){
-    // Init servo
-    servo_init();
-
-    // Init Display
-    ips200_init("/dev/fb0");
-
-    // Register clean up function 
-    atexit(cleanup);
-
-    // Register SIGINT handler 
-    signal(SIGINT, sigint_handler);
-
-    while(1){
-        static int x = 90;
-        x += (!gpio_get_level(KEY_0)) * (gpio_get_level(SWITCH_0) ? 1 : -1);
-        ips200_clear();
-        ips200_show_string(10, 20, std::string("Angle: " + std::to_string(x)).c_str());
-        set_servo_duty(x);
-        system_delay_ms(100);
-    }
+    std::cout << cv::getBuildInformation() << std::endl;
+    return 0;
 }
 int main() {
     std::cout << "version: 1.0.3" << std::endl;
-    return run();
+    return test();
 }
