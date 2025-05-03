@@ -3,6 +3,13 @@
 
 #include "Math.h"
 
+ /**
+ * @file Math.cpp
+ * @brief 数学相关工具
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
+
 /**
  * @brief 限幅
  * @param a 输入值

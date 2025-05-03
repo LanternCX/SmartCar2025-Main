@@ -2,7 +2,10 @@
 #define PID_H_
 
 /**
- * PID 控制头文件
+ * @file PID.cpp
+ * @brief PID 控制相关头文件
+ * @author Cao Xin
+ * @date 2025-04-05
  */
 
 typedef struct {

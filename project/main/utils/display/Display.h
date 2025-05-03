@@ -1,8 +1,11 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-/**
- * 屏幕操作头文件
+ /**
+ * @file Display.h
+ * @brief 屏幕操作
+ * @author Cao Xin
+ * @date 2025-04-04
  */
 
 // 屏幕高度

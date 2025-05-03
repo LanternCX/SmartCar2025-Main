@@ -2,7 +2,10 @@
 #define _LOW_PASS_H_
 
 /**
- * 低通滤波器头文件
+ * @file LowPass.h
+ * @brief 低通滤波相关操作头文具ian
+ * @author Cao Xin
+ * @date 2025-04-05
  */
 
 typedef struct {

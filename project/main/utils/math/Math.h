@@ -1,9 +1,19 @@
 #ifndef _MATH_H_
 #define _MATH_H_
 
+ /**
+ * @file Math.h
+ * @brief 数学相关工具头文件
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
+
 #include <vector>
 #include <opencv2/opencv.hpp>
 
+/**
+ * 直线参数
+ */
 struct line_params {
     // 斜率
     float slope;

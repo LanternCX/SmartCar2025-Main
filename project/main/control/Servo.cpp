@@ -8,8 +8,11 @@
 #include "LowPass.h"
 #include "Math.h"
 
-/**
- * 前轮舵机控制相关函数
+ /**
+ * @file Servo.cpp
+ * @brief 舵机相关操作
+ * @author Cao Xin
+ * @date 2025-04-06
  */
 
 struct pwm_info servo_pwm_info;

@@ -3,8 +3,11 @@
 
 #include "PID.h"
 
-/**
- * 后轮操作头文件
+ /**
+ * @file Motor.h
+ * @brief 后轮操作头文件
+ * @author Cao Xin
+ * @date 2025-04-05
  */
 
 // 电机 1 方向驱动路径

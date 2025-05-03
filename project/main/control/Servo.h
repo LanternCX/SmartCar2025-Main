@@ -1,8 +1,11 @@
 #ifndef _SERVO_H_
 #define _SERVO_H_
 
-/**
- * 前轮舵机控制头文件
+ /**
+ * @file Servo.h
+ * @brief 舵机操作头文件
+ * @author Cao Xin
+ * @date 2025-04-06
  */
 
 // 定义驱动路劲，该路劲由设备树生成

@@ -2,7 +2,10 @@
 #include "Math.h"
 
 /**
- * PID 控制相关函数
+ * @file PID.cpp
+ * @brief PID 控制相关函数
+ * @author Cao Xin
+ * @date 2025-04-05
  */
 
 /**

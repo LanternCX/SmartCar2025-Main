@@ -7,6 +7,16 @@
 
 #include "Perspective.h"
 
+/**
+ * @file 
+ * @brief 实现示例功能的主程序逻辑
+ * 
+ * 本文件用于演示如何对 C++ 文件进行文档注释。可与 Doxygen 工具配合生成文档。
+ * 
+ * @author 曹鑫
+ * @date 2025-05-04
+ */
+
 cv::Mat perspectiveTransform;
 
 void init_perspective(){
