@@ -25,7 +25,7 @@
  * @author Cao Xin
  * @date 2025-04-03
  */
-void cleanup() {
+void cleanup() { 
     printf("clean up...\n");
 
     // Power off the Motor
@@ -85,7 +85,7 @@ int run() {
         
         vision_result res = process_img(frame);
         int center = res.center;
-        Type type = res.type;
+        ElementType type = res.type;
 
         int width = frame.cols;
 

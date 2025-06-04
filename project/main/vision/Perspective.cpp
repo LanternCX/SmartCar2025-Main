@@ -1,3 +1,4 @@
+#include <cmath>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
@@ -5,28 +6,32 @@
 #include <iostream>
 #include <vector>
 
+#include "Vision.h"
 #include "Perspective.h"
 
 /**
- * @file 
- * @brief 实现示例功能的主程序逻辑
- * 
- * 本文件用于演示如何对 C++ 文件进行文档注释。可与 Doxygen 工具配合生成文档。
- * 
- * @author 曹鑫
- * @date 2025-05-04
+ * @file Perspective.cpp
+ * @brief 图像逆透视相关操作
+ * @author Cao Xin
+ * @date 2025-04-13
  */
 
-cv::Mat perspectiveTransform;
+static cv::Mat perspectiveTransform;
 
-void init_perspective(){
+/**
+ * @brief 初始化逆透视矩阵
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-13
+ */
+void init_perspective() {
     // 源点，手动标定获得，arg = 30 height = 18
     // 左上, 右上, 右下, 左下
     std::vector<cv::Point2f> src = {
-        cv::Point2f(220, 267),
-        cv::Point2f(418, 267),
-        cv::Point2f(502, 462),
-        cv::Point2f(139, 462)
+        cv::Point2f(271, 317),
+        cv::Point2f(372, 317),
+        cv::Point2f(393, 387),
+        cv::Point2f(252, 387) 
     };
 
     // 目标点
@@ -37,57 +42,108 @@ void init_perspective(){
         cv::Point2f(0, FRAME_HEIGHT - 1)
     };
     perspectiveTransform = getPerspectiveTransform(src, dst);
+    if (VISION_DEBUG) {
+        std::cout << "perspectiveTransform: \n";
+        std::cout << perspectiveTransform << '\n';
+    }
 }
 
-cv::Mat get_perspective_img(cv::Mat image){
+/**
+ * @brief 对图像进行透视变换
+ * @param image 输入的图像
+ * @return 透视变换之后的图像
+ * @author Cao Xin
+ * @date 2025-04-13
+ */
+cv::Mat get_perspective_img(cv::Mat frame) {
+    std::vector<cv::Point2f> srcPoints = {
+        cv::Point2f(271, 317),
+        cv::Point2f(372, 317),
+        cv::Point2f(393, 387),
+        cv::Point2f(252, 387) 
+    };
+
+    std::vector<cv::Point2f> dstPoints = {
+        cv::Point2f(0, 0),
+        cv::Point2f(FRAME_WIDTH - 1, 0),
+        cv::Point2f(FRAME_WIDTH - 1, FRAME_HEIGHT - 1),
+        cv::Point2f(0, FRAME_HEIGHT - 1)
+    };
+
+    cv::Mat M = getPerspectiveTransform(srcPoints, dstPoints);
+
+    // 用计算出来的透视变换矩阵对整幅图像进行变换
     cv::Mat warped;
-    warpPerspective(image, warped, perspectiveTransform, cv::Size(FRAME_WIDTH, FRAME_HEIGHT));
-    // cv::warpPerspective(image, warped, perspectiveTransform, image.size());
+    // 输出图像尺寸与原图一致
+    warpPerspective(frame, warped, M, cv::Size(FRAME_WIDTH, FRAME_HEIGHT));
+
     return warped;
 }
 
-std::vector<int> get_perspective_line(const std::vector<int>& line, cv::Size size) {
+/**
+ * @brief 对点集进行透视变换
+ * @param line 输入的点集
+ * @param size 原图的长宽
+ * @return 透视变换之后的点集
+ * @author Cao Xin
+ * @date 2025-04-13
+ */
+std::vector<cv::Point> get_perspective_line(const std::vector<cv::Point>& src, cv::Size size) {
     float height = size.height;
     float width = size.width;
 
-    // 计算中心偏移量，方便对齐
-    cv::Point2f center = get_perspective_pt(cv::Point2f(width / 2, height / 2));
-    float dx = center.x - width / 2;
-    float dy = center.y - height / 2;
-    
-    // 原点集 
-    std::vector<cv::Point2f> src;
-    for(size_t y = 0; y < line.size(); y++) {
-        src.push_back(cv::Point2f(line[y], y));
+    if (height > width) {
+        // std::cout << "heigth swap" << '\n';
+        std::swap(height, width);
     }
 
+    // 计算中心偏移量，方便对齐
+    cv::Point center = get_perspective_pt(cv::Point(width / 2, height / 2));
+    int dx = center.x - width / 2;
+    int dy = center.y - height / 2;
+
+    // int margin = 10;
     // 转换后的点集
-    std::vector<cv::Point2f> dst;
-    cv::perspectiveTransform(src, dst, perspectiveTransform);
-    
-    // 初始化结果数组，大小与输入line相同
-    std::vector<int> res(line.size(), -1);
-    
-    // 将变换后的点映射回整数数组
-    for(size_t i = 0; i < dst.size(); i++) {
-        int newX = static_cast<int>(std::round( dst[i].x - dx));
-        int newY = static_cast<int>(std::round(dst[i].y - dy));
+    std::vector<cv::Point> dst;
+    for(cv::Point pt : src) {
         
-        if(newY >= 0 && newY < static_cast<int>(res.size()) && 
-           newX >= 0 && newX < width) {
-            res[newY] = newX;
-        }
+        cv::Point res = get_perspective_pt(pt);
+        // // 边缘全丢线的点没有意义直接丢弃
+        // if (pt.y < margin && pt.x < margin || pt.y > height - margin && pt.x > width - margin) {
+        //     continue;
+        // }
+
+        // // 在 x 方向上丢线只对 y 进行透视变换
+        // if (pt.x < margin || pt.x > width - margin) {
+        //     dst.push_back(cv::Point(pt.x, res.y - dy));
+        //     continue;
+        // }
+
+        // // 在 y 方向上丢线只对 x 进行透视变换
+        // if (pt.y < margin  || pt.y > height - margin) {
+        //     dst.push_back(cv::Point(pt.x - dx, res.y));
+        //     continue;
+        // }
+        
+        dst.push_back(cv::Point(res.x - dx, res.y - dy));
     }
-    return res;
+    return dst;
 }
 
-cv::Point2f get_perspective_pt(cv::Point2f src){
+/**
+ * @brief 对点进行透视变换
+ * @param line 输入的点集
+ * @param size 原图的长宽
+ * @return 透视变换之后的点集
+ * @author Cao Xin
+ * @date 2025-04-13
+ */
+cv::Point get_perspective_pt(cv::Point src) {
     // 转换为输入点数组
     std::vector<cv::Point2f> srcPoints = {src};
     std::vector<cv::Point2f> dstPoints;
     
     // 执行逆透视变换
     cv::perspectiveTransform(srcPoints, dstPoints, perspectiveTransform);
-
     return dstPoints[0];
 }

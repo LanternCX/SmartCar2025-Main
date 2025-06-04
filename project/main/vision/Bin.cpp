@@ -1,7 +1,10 @@
 #include <opencv2/opencv.hpp>
 
 /**
- * 大津法二值化相关函数
+ * @file Bin.cpp
+ * @brief 大津法二值化相关操作
+ * @author Cao Xin
+ * @date 2025-04-03
  */
 
 /**
@@ -13,7 +16,7 @@
  * @author Cao Xin
  * @date 2025-04-03
  */
-uint8_t otsu_threshold(const cv::Mat& src, cv::Point topLeft = cv::Point(-1, -1), cv::Point bottomRight = cv::Point(-1, -1)) {
+uint8_t otsu_threshold(const cv::Mat& src, cv::Point topLeft, cv::Point bottomRight) {
     // 检查输入图像是否为灰度图像
     if (src.channels() != 1) {
         throw std::runtime_error("Input image must be grayscale (single channel).");
@@ -26,7 +29,7 @@ uint8_t otsu_threshold(const cv::Mat& src, cv::Point topLeft = cv::Point(-1, -1)
     int y1 = (bottomRight.x == -1 && bottomRight.y == -1) ? src.rows : bottomRight.y;
 
     // 检查区域参数是否有效
-    if (x0 < 0 || x1 > src.cols || y0 < 0 || y1 > src.rows || x0 >= x1 || y0 >= y1) {
+    if (x0 < 0 || x1 > src.cols || y0 < 0 || y1 > src.rows || x0 > x1 || y0 > y1) {
         throw std::runtime_error("Invalid region specified.");
     }
 
@@ -105,10 +108,11 @@ uint8_t otsu_threshold(const cv::Mat& src, cv::Point topLeft = cv::Point(-1, -1)
  * @param dst 输出的二值化图像
  * @param topLeft 区域的左上角点（默认值为 (-1, -1) 表示整个图像）
  * @param bottomRight 区域的右下角点（默认值为 (-1, -1) 表示整个图像）
+ * @return none
  * @author Cao Xin
  * @date 2025-04-03
  */
-void otsu_binarize(const cv::Mat& src, cv::Mat& dst, cv::Point topLeft = cv::Point(-1, -1), cv::Point bottomRight = cv::Point(-1, -1)) {
+void otsu_binarize(const cv::Mat& src, cv::Mat& dst, cv::Point topLeft, cv::Point bottomRight) {
     // 检查输入图像是否为空
     if (src.empty()) {
         throw std::runtime_error("Input image is empty.");
@@ -125,15 +129,16 @@ void otsu_binarize(const cv::Mat& src, cv::Mat& dst, cv::Point topLeft = cv::Poi
     int y1 = (bottomRight.x == -1 && bottomRight.y == -1) ? src.rows : bottomRight.y;
 
     // 检查区域参数是否有效
-    if (x0 < 0 || x1 > src.cols || y0 < 0 || y1 > src.rows || x0 >= x1 || y0 >= y1) {
+    if (x0 < 0 || x1 > src.cols || y0 < 0 || y1 > src.rows || x0 > x1 || y0 > y1) {
         throw std::runtime_error("Invalid region specified.");
     }
 
     // 计算大津法阈值
-    uint8_t threshold = otsu_threshold(src, topLeft, bottomRight);
+    int threshold = otsu_threshold(src, topLeft, bottomRight);
+    threshold = std::max(1, threshold);
 
     // 创建输出图像，初始化为全黑
-    dst = cv::Mat::zeros(src.size(), CV_8UC1);
+    // dst = cv::Mat::zeros(src.size(), CV_8UC1);
 
     // 二值化处理
     for (int i = y0; i < y1; i++) {

@@ -1,14 +1,13 @@
-#ifndef MOTOR_H
-#define MOTOR_H
-
 #include "PID.h"
 
- /**
+/**
  * @file Motor.h
  * @brief 后轮操作头文件
  * @author Cao Xin
  * @date 2025-04-05
  */
+
+ #pragma once
 
 // 电机 1 方向驱动路径
 #define MOTOR1_DIR "/dev/zf_driver_gpio_motor_1"
@@ -50,4 +49,3 @@ typedef struct {
 void motor_init();
 void set_left_speed(int speed);
 void set_right_speed(int speed);
-#endif

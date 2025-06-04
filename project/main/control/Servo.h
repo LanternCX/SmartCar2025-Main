@@ -1,12 +1,11 @@
-#ifndef _SERVO_H_
-#define _SERVO_H_
-
- /**
+/**
  * @file Servo.h
  * @brief 舵机操作头文件
  * @author Cao Xin
  * @date 2025-04-06
  */
+
+#pragma once
 
 // 定义驱动路劲，该路劲由设备树生成
 #define SERVO_MOTOR1_PWM "/dev/zf_device_pwm_servo"
@@ -37,4 +36,3 @@ typedef struct {
 void servo_init();
 void set_servo_duty(int duty);
 servo_params get_servo_param();
-#endif

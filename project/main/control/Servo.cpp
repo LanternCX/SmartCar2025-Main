@@ -40,7 +40,7 @@ void init_servo_low_pass(low_pass_param &lowpass){
  * @date 2025-04-06
  */
 void set_servo_duty(int duty){
-    duty = minmax(duty, SERVO_MOTOR_L_MAX, SERVO_MOTOR_R_MAX);
+    duty = clip(duty, SERVO_MOTOR_L_MAX, SERVO_MOTOR_R_MAX);
     pwm_set_duty(SERVO_MOTOR1_PWM, (uint16)SERVO_MOTOR_DUTY(duty));
 }
 

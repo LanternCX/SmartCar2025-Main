@@ -3,6 +3,7 @@
 #include "LowPass.h"
 #include "Motor.h"
 #include "Servo.h"
+#include "Track.h"
 #include "Vision.h"
 #include "Control.h"
 
@@ -119,7 +120,7 @@ void to_center(int now, int target){
  * @author Cao Xin
  * @date 2025-04-06
  */
-void set_statue(Type type){
+void set_statue(ElementType type){
     
     if(type == LINE){
         dir_low_pass.alpha = 0.1;
@@ -128,7 +129,7 @@ void set_statue(Type type){
             std::cerr << "servo-target: " << "LINE" << '\n';
         }
     }
-    if(type == CURVE){
+    if(type == L_CURVE || type == R_CURVE){
         dir_low_pass.alpha = 0.6;
         speed.current = speed.curve_speed;
         if(SERVO_DEBUG){

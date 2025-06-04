@@ -1,12 +1,11 @@
-#ifndef PID_H_
-#define PID_H_
-
 /**
  * @file PID.cpp
  * @brief PID 控制相关头文件
  * @author Cao Xin
  * @date 2025-04-05
  */
+
+ #pragma once
 
 typedef struct {
     /**
@@ -80,5 +79,3 @@ typedef struct {
 float pid_slove(pid_param *pid, float error);
 
 float increment_pid_solve(pid_param *pid, float error);
-
-#endif /* _PID_H_ */
