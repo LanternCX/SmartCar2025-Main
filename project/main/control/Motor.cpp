@@ -154,7 +154,7 @@ void set_left_speed(int speed){
         static int leftOut[100];
         cnt1++;
         cnt1 %= 100;
-        // std::cout << "duty-l: " <<  left_duty << " now-l: " << now << " target-l: " << speed << " error-l: " << error << '\n';
+        std::cout << "duty-l: " <<  left_duty << " now-l: " << now << " target-l: " << speed << " error-l: " << error << '\n';
         leftOut[cnt1] = now;
         for(int i = 0; i < 100; i++){
             ips200_draw_point((10 + i), (uint16)max(320 - leftOut[i] / 3.0, 1), 0x00FF);
@@ -185,7 +185,7 @@ void set_right_speed(int speed){
     right_duty += det;
 
     // 输出到电机控制
-    right_motor_run(abs(right_duty), right_duty > 0 ? 0 : 1);
+    right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
 
     // Debug 信息
     if(MOTOR_DEBUG){
@@ -193,7 +193,7 @@ void set_right_speed(int speed){
         static int rightOut[100];
         cnt2++;
         cnt2 %= 100;
-        // std::cout << "duty-r: " <<  right_duty << " now-r: " << now << " target-l: " << speed << " error-r: " << error << '\n';
+        std::cout << "duty-r: " <<  right_duty << " now-r: " << now << " target-l: " << speed << " error-r: " << error << '\n';
         rightOut[cnt2] = now;
         for(int i = 0; i < 100; i++){
             ips200_draw_point((10 + i), (uint16)max(220 - rightOut[i] / 3.0, 1), 0xF800);

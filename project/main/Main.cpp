@@ -65,7 +65,6 @@ int run() {
     
     // Init Controller
     control_init(100, 70);
-
     init_perspective();
 
     while (true) {
@@ -90,10 +89,12 @@ int run() {
 }
 
 int test(){
-    std::cout << cv::getBuildInformation() << std::endl;
+    while(1) {
+        std::cout << encoder_get_count(ENCODER_1) << '\n';
+    }
     return 0;
 }
 int main() {
     std::cout << "version: 1.0.3" << std::endl;
-    return test();
+    return run();
 }
