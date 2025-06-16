@@ -102,7 +102,7 @@ std::vector<cv::Point> get_perspective_line(const std::vector<cv::Point>& src, c
     int dx = center.x - width / 2;
     int dy = center.y - height / 2;
 
-    // int margin = 10;
+    int margin = 10;
     // 转换后的点集
     std::vector<cv::Point> dst;
     for(cv::Point pt : src) {

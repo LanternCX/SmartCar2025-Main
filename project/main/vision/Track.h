@@ -92,6 +92,13 @@ const std::set<ElementType> cross_type = {
     CROSS_IN
 };
 
+const std::set<ElementType> curve_type = {
+    L_CURVE,
+    R_CURVE,
+};
+
+
+
 /**
  * @brief 左右边线和中线
  */
@@ -117,3 +124,4 @@ ElementType calc_element_type(const track_result &track);
 ElementType calc_cross(const track_result &track, const std::array<std::pair<int, int>, 2> corner_cnt);
 ElementType calc_right_ring(const track_result &track, const std::array<std::pair<int, int>, 2> corner_cnt);
 ElementType calc_left_ring(const track_result &track, const std::array<std::pair<int, int>, 2> corner_cnt);
+std::vector<int> calc_center_y(const track_result &track);

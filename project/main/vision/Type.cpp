@@ -51,7 +51,7 @@ void init_state() {
  * @param now 当前帧计算出的赛道状态
  */
 void change_type_count(ElementType now) {
-    if ((int) state.pre_frame_type.size() > state.length) {
+    if (state.pre_frame_type.size() > state.length) {
         ElementType pre = state.pre_frame_type.front();
         state.pre_frame_type.pop();
         state.type_cnt[pre]--;

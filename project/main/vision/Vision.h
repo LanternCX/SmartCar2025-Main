@@ -18,7 +18,7 @@
 
 #define VISION_DEBUG 1
 
-const int TRACK_WIDTH = 115 * 2;
+const int TRACK_WIDTH = 140 * 2;
 typedef struct{
     int center;
     ElementType type;

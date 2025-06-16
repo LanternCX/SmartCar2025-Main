@@ -11,6 +11,7 @@
 #include "Control.h"
 #include "Servo.h"
 #include "Time.h"
+#include "Debug.h"
 
 /**
  * @file Main.cpp
@@ -71,9 +72,10 @@ int run() {
     motor_init();
     
     // Init Controller
-    control_init(100, 70);
+    control_init(40, 40);
 
     init_perspective();
+    init_state();
 
     while (true) {
         // Read Frame
@@ -82,7 +84,6 @@ int run() {
             std::cerr << "Read frame failed" << std::endl;
             break;
         }
-        
         vision_result res = process_img(frame);
         int center = res.center;
         ElementType type = res.type;
@@ -91,16 +92,34 @@ int run() {
 
         // Control
         set_statue(type);
+        debug(center, width / 2);
+        debug(type);
         to_center(center, width / 2);
     }
     return 0;   
 }
 
-int test(){
-    std::cout << cv::getBuildInformation() << std::endl;
+int test() {
+    // Init servo
+    servo_init();
+
+    // Init Motor
+    motor_init();
+
+    // Register clean up function 
+    atexit(cleanup);
+
+    // Register SIGINT handler 
+    signal(SIGINT, sigint_handler);
+
+    while(1) {
+        set_left_speed(100);
+        set_right_speed(100);
+    }
+
     return 0;
 }
 int main() {
     std::cout << "version: 1.0.3" << std::endl;
-    return test();
+    return run();
 }

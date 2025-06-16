@@ -153,7 +153,7 @@ vision_result process_img(cv::Mat frame) {
 
     calc_target(track, get_track_type());
 
-    debug(get_track_type());
+    // debug(get_track_type());
 
     if (VISION_DEBUG) {
         cv::Mat left = cv::Mat::zeros(frame.size(), CV_8UC1);
@@ -178,8 +178,8 @@ vision_result process_img(cv::Mat frame) {
             cv::circle(right_center, pts, 1, 255);
         }
 
-        cv::imshow("left", left);
-        cv::imshow("right", right);
+        // cv::imshow("left", left);
+        // cv::imshow("right", right);
         // cv::imshow("right-center", right_center);
         // cv::imshow("left-center", left_center);
     }
@@ -196,22 +196,55 @@ static cv::Point pre_target;
  */ 
 void calc_target(track_result &track, ElementType type) {
     cv::Size size = track.left.frame_size;
-    if (cross_type.count(type)) {
-        calc_cross_target(track, type);
-    } else if (ring_type.count(type)) {
-        calc_ring_target(track, type);
-    } else {
-        track.center = track.left.center;
-        track.target.y = size.height - 15;
-    }
+
+    // 如果是元素那么就进行元素判断
+    // if (cross_type.count(type) || ring_type.count(type)) {
+    //     if (cross_type.count(type)) {
+    //         calc_cross_target(track, type);
+    //     } else if (ring_type.count(type)) {
+    //         calc_ring_target(track, type);
+    //     }
+    //     
+    //     return;
+    // }
     
-    // 找到 y 值距离预锚点 y 值最近的点作为预锚点
-    int min_dist = std::max(size.height, size.width);
-    for (cv::Point pts : track.center) {
-        int dist = std::abs(pts.y - track.target.y);
-        if (dist < min_dist) {
-            track.target.x = pts.x;
-            pre_target = track.target;
+    // if (curve_type.count(type)) {
+    //     track.target.y = size.height - 40;
+    //     if (type == L_CURVE) {
+    //         track.center = track.right.center;
+    //     } 
+    //     if (type == R_CURVE) {
+    //         track.center = track.left.center;
+    //     }
+
+    //     // 找到 y 值距离预锚点 y 值最近的点作为预锚点
+    //     int min_dist = std::max(size.height, size.width);
+    //     for (cv::Point pts : track.center) {
+    //         int dist = std::abs(pts.y - track.target.y);
+    //         if (dist < min_dist) {
+    //             track.target.x = pts.x;
+    //             pre_target = track.target;
+    //         }
+    //     }
+
+    //     return;
+    // }
+
+    int height = std::min(size.height, size.width);
+    track.target.y = height - 50;
+
+    vector<int> center_x = calc_center_y(track);
+    // 找到 y 值距离预锚点 y 值最近的点作为预锚点 
+    int min_dist = std::min(size.height, size.width);
+    for (int i = 0; i <= height; i++) {
+        if (center_x[i] == -1) {
+            continue;
+        }
+
+        int dist = std::abs(i - track.target.y);
+        if (min_dist > dist) {
+            min_dist = dist;
+            track.target.x = center_x[i];
         }
     }
 }

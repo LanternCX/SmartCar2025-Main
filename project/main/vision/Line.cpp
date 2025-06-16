@@ -198,6 +198,7 @@ void rebuild_line(const std::vector<float>& angle_in, std::vector<cv::Point>& pt
  */
 std::vector<int> trans_line(const std::vector<cv::Point> &line, const cv::Size &size) {
     int height = size.height;
+    int width = size.width;
     std::vector<int> res(height + 1, -1);
     int min_y = height;
     for (cv::Point pts : line) {

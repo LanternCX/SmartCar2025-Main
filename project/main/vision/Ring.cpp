@@ -63,7 +63,7 @@ bool calc_is_ring_in(const track_result track) {
     cv::Size size = track.left.frame_size;
     cv::Point target = get_pre_target();
     int height = size.height;
-    // int width = size.width;
+    int width = size.width;
 
     std::vector<int> left(height + 1, -1), right(height + 1, -1);
     for (cv::Point pt : track.left.line) {
@@ -95,5 +95,5 @@ bool calc_is_ring_in(const track_result track) {
     }
     bool res = min_idx == -1 ? false : min_idx > 280; 
     debug(min_idx, target.y);
-    return res;
+    return false;
 }

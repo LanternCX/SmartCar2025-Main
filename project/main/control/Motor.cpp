@@ -188,7 +188,7 @@ void set_right_speed(int speed){
     right_duty += det;
 
     // 输出到电机控制
-    right_motor_run(abs(right_duty), right_duty > 0 ? 0 : 1);
+    right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
 
     // Debug 信息
     if(MOTOR_DEBUG){

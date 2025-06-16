@@ -4,7 +4,6 @@
  * @author Cao Xin
  * @date 2025-05-03
  */
-
 #pragma once
 
 #include <opencv2/opencv.hpp>
