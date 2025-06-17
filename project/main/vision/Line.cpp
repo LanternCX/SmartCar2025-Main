@@ -444,3 +444,19 @@ std::vector<cv::Point> shift_line(
 
     return result;
 }
+
+std::vector<cv::Point> resample_to_single_y(const std::vector<cv::Point> & line, const cv::Size & size) {
+    int height = std::min(size.height, size.width);
+    int min_y = height;
+    vector<cv::Point> res;
+    for (cv::Point pt : line) {
+        int y = pt.y;
+        if (y > min_y) {
+            continue;
+        } else {
+            res.push_back(pt);
+            min_y = y;
+        } 
+    }
+    return res;
+}

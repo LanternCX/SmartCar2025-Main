@@ -72,7 +72,7 @@ int run() {
     motor_init();
     
     // Init Controller
-    control_init(40, 40);
+    control_init(65, 65);
 
     init_perspective();
     init_state();
@@ -85,11 +85,12 @@ int run() {
             break;
         }
         vision_result res = process_img(frame);
-        int center = res.center;
-        ElementType type = res.type;
-
         int width = frame.cols;
-
+        static int center = width / 2;
+        if (res.center >= 10) {
+            center = res.center;
+        }
+        ElementType type = res.type;
         // Control
         set_statue(type);
         debug(center, width / 2);

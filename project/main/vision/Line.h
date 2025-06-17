@@ -34,3 +34,4 @@ std::vector<int> trans_line(const std::vector<cv::Point> &line, const cv::Size &
 void remove_bound_pts(const std::vector<cv::Point>& pts_in, std::vector<cv::Point>& pts_out, cv::Size size);
 std::vector<cv::Point> mirror_line(const std::vector<cv::Point>& line, cv::Size size);
 std::vector<cv::Point> shift_line(const std::vector<cv::Point>& line, int dist);
+std::vector<cv::Point> resample_to_single_y(const std::vector<cv::Point> & line, const cv::Size & size);

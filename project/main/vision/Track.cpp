@@ -176,9 +176,12 @@ ElementType calc_element_type(const track_result &track) {
     corner_cnt[0] = get_corner_count(left_x);
     corner_cnt[1] = get_corner_count(right_x);
 
-    line_params left_fit_res = fit_line(left.line);
-    line_params right_fit_res = fit_line(right.line);
+    line_params left_fit_res = fit_line(left.center);
+    line_params right_fit_res = fit_line(right.center);
 
+    // std::cout << left.center << '\n';
+    // std::cout << right.center << '\n';
+    
     // debug(solt_cnt);
     // debug(corner_cnt);
 
@@ -210,14 +213,16 @@ ElementType calc_element_type(const track_result &track) {
     //     return L_RING_READY;
     // }
 
-    // debug(left_fit_res.slope);
-    // debug(right_fit_res.slope);
-    if (left_fit_res.slope > -0.15) {
+    debug(left_fit_res.slope);
+    debug(right_fit_res.slope);
+    if (left_fit_res.slope < 0 && left_fit_res.slope > -4) {
+        // return 2
         return R_CURVE;
     }
 
     // 因为前面镜像过了所以需要注意符号
-    if (right_fit_res.slope > 0.15) {
+    if (right_fit_res.slope > 0 && right_fit_res.slope < 4) {
+        // return 1
         return L_CURVE;
     }
     return LINE;
@@ -371,7 +376,7 @@ ElementType calc_left_ring(const track_result &track, const std::array<std::pair
     return LINE;
 }
 
-std::vector<int> calc_center_y(const track_result &track) {
+std::vector<int> calc_center_x(const track_result &track) {
     std::vector<cv::Point> left = track.left.center;
     std::vector<cv::Point> right = track.right.center;
 

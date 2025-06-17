@@ -124,4 +124,4 @@ ElementType calc_element_type(const track_result &track);
 ElementType calc_cross(const track_result &track, const std::array<std::pair<int, int>, 2> corner_cnt);
 ElementType calc_right_ring(const track_result &track, const std::array<std::pair<int, int>, 2> corner_cnt);
 ElementType calc_left_ring(const track_result &track, const std::array<std::pair<int, int>, 2> corner_cnt);
-std::vector<int> calc_center_y(const track_result &track);
+std::vector<int> calc_center_x(const track_result &track);
