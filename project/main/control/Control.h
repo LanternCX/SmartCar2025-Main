@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Vision.h"
+// #include "Vision.h"
 
  /**
   * @brief 速度参数
@@ -23,4 +23,4 @@ typedef struct{
 
 void to_center(int now, int target);
 void control_init(int line_speed, int curve_speed);
-void set_statue(ElementType type);
+// void set_statue(ElementType type);

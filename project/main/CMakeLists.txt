@@ -68,6 +68,7 @@ aux_source_directory(../main/utils/time DIR_SRCS)
 aux_source_directory(../main/utils/debug DIR_SRCS)
 aux_source_directory(../main/vision DIR_SRCS)
 aux_source_directory(../main/control DIR_SRCS)
+aux_source_directory(../main/image DIR_SRCS)
 
 # 创建可执行文件，使用项目名称作为目标名称
 add_executable(${PROJECT_NAME} ${DIR_SRCS})

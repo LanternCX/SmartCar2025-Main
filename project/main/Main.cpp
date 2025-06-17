@@ -1,17 +1,16 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
-#include "Perspective.h"
 #include "zf_common_headfile.h"
 
 #include "Main.h"
-#include "Vision.h"
 #include "Display.h"
 #include "Motor.h"
 #include "Control.h"
 #include "Servo.h"
 #include "Time.h"
 #include "Debug.h"
+#include "Image.h"
 
 /**
  * @file Main.cpp
@@ -46,6 +45,19 @@ void sigint_handler(int signum) {
     exit(0);
 }
 
+/**
+ * @brief 给图像绘制黑色边框
+ * @param image 输入的图像
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-03
+ */
+void draw_border(cv::Mat& image) {
+    if (image.empty()) return;
+    // 画矩形框
+    cv::rectangle(image, cv::Point(0, 0), cv::Point(image.cols - 1, image.rows - 1), cv::Scalar(0), 10);
+}
+
 int run() {
     // Init cam
     cv::VideoCapture cap(0);
@@ -74,28 +86,43 @@ int run() {
     // Init Controller
     control_init(65, 65);
 
-    init_perspective();
-    init_state();
-
     while (true) {
-        // Read Frame
         cap >> frame;
         if (frame.empty()) {
-            std::cerr << "Read frame failed" << std::endl;
+            std::cerr << "无法读取视频帧或视频已结束！" << std::endl;
             break;
         }
-        vision_result res = process_img(frame);
-        int width = frame.cols;
-        static int center = width / 2;
-        if (res.center >= 10) {
-            center = res.center;
+
+        // 不知道为什么 resize 会导致透视变换不可用
+        // cv::resize(frame, frame, cv::Size(), 0.5, 0.5);
+
+        double alpha = 1.0;
+        int beta = 50;
+        frame.convertTo(frame, -1, alpha, beta);
+
+        
+        cv::Mat gray;
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+        
+        draw_border(gray);
+
+        // Resize gray to desired size
+        cv::Mat resized_gray;
+        cv::resize(gray, resized_gray, cv::Size(Image_W, Image_H), 0, 0, cv::INTER_LINEAR);
+
+        // 复制到 Original_Image
+        for (int i = 0; i < Image_H; i++) {
+            for (int j = 0; j < Image_W; j++) {
+                Original_Image[i][j] = resized_gray.at<uchar>(i, j);
+            }
         }
-        ElementType type = res.type;
-        // Control
-        set_statue(type);
-        debug(center, width / 2);
-        debug(type);
-        to_center(center, width / 2);
+
+        Image_Process();
+
+        int err = Image_Erro;
+        debug(err);
+
+        to_center(err, 74);
     }
     return 0;   
 }
