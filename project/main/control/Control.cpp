@@ -34,9 +34,9 @@ void init_dir_pid(pid_param &pid){
     // v 70 - 20 lowpass 0.5 0.1 p 0.4 d 0.4 line -20
     // v 80 - 30 lowpass 0.5 0.1 p 0.4 d 0.6 line -70
     // v 100, 70 lowpass 0.6 0.1 p 0.3 d 0.95 line -50 no det
-    pid.kp = 0.80;
+    pid.kp = 0.75;
     pid.ki = 0.00;
-    pid.kd = 0.00;
+    pid.kd = 0.80;
 
     pid.p_max = 30.0;
     pid.i_max = 30.0;

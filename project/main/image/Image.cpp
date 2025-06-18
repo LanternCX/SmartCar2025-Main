@@ -2207,15 +2207,15 @@ void Image_Process(void)
         Get_Left(Data_Stastics_L);
         Get_Right(Data_Stastics_R);
     
-        if((!Image_Flag.Right_Ring) && (!Image_Flag.Left_Ring) && (!Image_Flag.Cross_Fill))
-        {
-            Zebra_Seek(Bin_Image);
-        }
-        // 优先判断是否是十字如果是十字则不对圆环判断
-        if((!Image_Flag.Right_Ring) && (!Image_Flag.Left_Ring) && (!Image_Flag.Zerba))
-        {
-            Cross_Fill(Bin_Image, L_Border, R_Border, Data_Stastics_L, Data_Stastics_R, Dir_L, Dir_R, Points_L, Points_R);//十字补线
-        }
+        // if((!Image_Flag.Right_Ring) && (!Image_Flag.Left_Ring) && (!Image_Flag.Cross_Fill))
+        // {
+        //     Zebra_Seek(Bin_Image);
+        // }
+        // // 优先判断是否是十字如果是十字则不对圆环判断
+        // if((!Image_Flag.Right_Ring) && (!Image_Flag.Left_Ring) && (!Image_Flag.Zerba))
+        // {
+        //     Cross_Fill(Bin_Image, L_Border, R_Border, Data_Stastics_L, Data_Stastics_R, Dir_L, Dir_R, Points_L, Points_R);//十字补线
+        // }
     
         // 同上
 
@@ -2233,7 +2233,7 @@ void Image_Process(void)
     {
         Center_Line[i] = (L_Border[i] + R_Border[i]) >> 1;//求中线
     }
-    Image_Erro = (Center_Line[40])*0.375f + (Center_Line[41])*0.5f + (Center_Line[42])*0.1f;
+    Image_Erro = (Center_Line[49])*0.375f + (Center_Line[50])*0.5f + (Center_Line[51])*0.1f;
     // Image_Erro_Y_ = 10*((float)(Right_White - Left_White)/(float)(Right_White + Left_White));
     // Image_Erro_Y = Image_Erro_Y_*0.25f + Image_Erro_Y*0.75f;
 
