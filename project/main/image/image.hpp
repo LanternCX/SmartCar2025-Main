@@ -1,14 +1,28 @@
-#ifndef IMGDEAL_H
-#define IMGDEAL_H
+#ifndef __IMAGE_H__
+#define __IMAGE_H__
 
-#include"base.hpp"
+#include "zf_common_headfile.h"
+
+#define CAMERA_H 60
+#define CAMERA_W 80
+
+#define uint8 uint8_t
+#define uint32 uint32_t
+#define int16 int16_t
+#define int32 int32_t
+
+#define OX  (50/ 3000.0)  //标度变换
 
 #define ImageSensorMid 39 
 #define LimitL(L) (L = ((L < 1) ? 1 : L))    //限制幅度
 #define LimitH(H) (H = ((H > 78) ? 78 : H))  //限制幅度
 
+extern int img1[60][80];//图像二值化之后的数组
+extern int imgdisplay[60][80];//打印的图像数组
+extern uint8 Garage_Location_Flag;//斑马线累积初始次数
+
 void Element_Test(void);
-extern void imageprocess(void);
+extern int imageprocess(void);
 extern void Data_Settings(void);
 extern int ImageScanInterval;               //扫边范围    上一行的边界+-ImageScanInterval
 extern int ImageScanInterval_Cross2; 
@@ -27,6 +41,7 @@ typedef enum
   LeftCirque,   ////左圆环
   RightCirque,  ////右圆环
   Cross_ture,
+  Barn_in,      //入库
 } RoadType_e;
 
 extern uint8 TP, TP_O1,TP_O2;
@@ -155,10 +170,6 @@ typedef struct
 
 typedef struct
 {
-  //2025.1.9时添加
-  int32 pwm_out;
-  int pwm_now;
-  int offline;
 
   /*以下关于全局图像正常参数*/
 
@@ -227,9 +238,11 @@ typedef struct
   int Ramp_lenth;
 
   int variance;  //直道检测阈值方差
+  int straight_acc_flag;  //直线判断标志位
 
   int straight_acc;  //直道加速标志位
   int  variance_acc;    //用于加速的阈值方差
+ 
 
   int ramptestlenth;//坡道检测间隔
 
@@ -265,7 +278,7 @@ typedef struct
     int16 image_element_rings_flag;             /*圆环进程*/
     int16 straight_long;                        /*长直道标志位*/
 //    int16 Garage_Location;                      /*0 :无车库          1 :左车库       2 :右车库*/
-//    int16 Zebra_Flag;                           /*0 :无斑马线       1 左车库       2 :右车库*/
+   int16 Zebra_Flag;                           /*0 :无斑马线       1 左车库       2 :右车库*/
 //    int16 Ramp;                                  /*0 :无坡道          1：坡道*/
 //    int16 RoadBlock_Flag;                        /*0 :无路障            1 :路障*/
 //    int16 Out_Road;                               /*0 :无断路      1 :断路*/
@@ -352,4 +365,5 @@ extern ImageStatustypedef ImageStatus;  //图像的全局变量
 extern ImageFlagtypedef ImageFlag;
 extern SystemDatatypdef SystemData;
 extern ImageParametertypedef ImageParameter;
+extern float variance, variance_acc;  //方差--直线检测用
 #endif

@@ -1,95 +1,109 @@
-#include"base.hpp"
-#include"image.hpp"
-#include"imgdeal.hpp"
-#include "steer.hpp"
-#include "motor.hpp"
-#include "timer.hpp"
-#include "register.hpp"
-#include "encoder.hpp"
+#include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
+#include <string>
 
+#include "zf_common_headfile.h"
+
+#include "Main.h"
+#include "Display.h"
+#include "Motor.h"
+#include "Control.h"
+#include "Servo.h"
+#include "Time.h"
 #include "Debug.h"
+#include "image.hpp"
+#include "image_cv.hpp"
 
-long szr;
-// PWM_GTIM steer_test(89, 0b11, 3, 20000000, 0);
-// // 定义定时器间隔（5ms）
-// const auto timer_interval = std::chrono::milliseconds(20);
-// ENCODER encoder_l(0, 51);//左编码器初始化
-// ENCODER encoder_r(3, 50);//右编码器初始化
-// PWM_ls test_l(1, 10000, 8000);//这里的占空比是低电位所占比例  改周期时要将上方setDutyCycle中的10000也改掉
-// PWM_ls test_r(2, 10000, 8000);//这里的占空比是低电位所占比例  改周期时要将上方setDutyCycle中的10000也改掉
-// GPIO motor_l(73);//左电机方向脚初始化
-// GPIO motor_r(72);//右电机方向脚初始
+/**
+ * @file Main.cpp
+ * @brief 主函数文件
+ * @author Cao Xin
+ * @date 2025-04-03
+ */
 
-void timer_thread()
-{
-    while (true)
-    {
-        // speed_l = encoder_l.pulse_counter_update();
-        // speed_r = -encoder_r.pulse_counter_update();
-        // Motor_Control();//电机PWM转换
-        // speed_l = encoder_l.pulse_counter_update();
-        // speed_r = -encoder_r.pulse_counter_update();
-        // if (Speed_PID_OUT_r >= 0)
-        // {
-        //     motor_r.setValue(0); test_r.setDutyCycle(Speed_PID_OUT_r);
-        // }
-        // else { motor_r.setValue(1); test_r.setDutyCycle(-Speed_PID_OUT_r); }
-        // if (Speed_PID_OUT_l >= 0)
-        // {
-        //     motor_l.setValue(0); test_l.setDutyCycle(Speed_PID_OUT_l);
-        // }
-        // else { motor_l.setValue(1); test_l.setDutyCycle(-Speed_PID_OUT_l); }
+/**
+ * @brief 程序退出时清理函数
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-03
+ */
+void cleanup() { 
+    printf("clean up...\n");
 
-        // SteerPID_Realize(ImageStatus.Det_True - ImageStatus.MiddleLine);//舵机PID计算
-        // steer_test.setDutyCycle(PWM_STEER);
-        // std::this_thread::sleep_for(timer_interval);
-
-        debug(ImageStatus.Det_True);
-    }
+    // Power off the Motor
+    pwm_set_duty(MOTOR1_PWM, 0);   
+    pwm_set_duty(MOTOR2_PWM, 0);
+    pwm_set_duty(SERVO_MOTOR1_PWM, 0);
 }
 
+/**
+ * @brief 程序退出时清理函数
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-03
+ */
+void sigint_handler(int signum) {
+    printf("exit..\n");
+    exit(0);
+}
 
-int main()
-{
-    //PWM_ATIM steer_test(89, 0b11, 3, 20000000, 1700,1);
-    debug(1);
-    Mat img, img_erzhi;
-    int fps_count = 0;
-    auto start_time = high_resolution_clock::now(); // 开始时间
-    VideoCapture cap(0);
-    if (!cap.isOpened()) { cerr << "Could not open the camera" << endl; return -1; }
-    InitMH();
-    string command;
-    // cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
-    // cap.set(cv::CAP_PROP_FRAME_WIDTH, 320);  // 设置分辨率宽度为640
-    // cap.set(cv::CAP_PROP_FRAME_HEIGHT, 240); // 设置分辨率高度为480
-    // cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G')); // 设置视频编码格式为MJPG
-    // cap.set(cv::CAP_PROP_FPS, 120); // 设置帧率为120 FPS
-    // cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 3);   // 关闭自动曝光
-    // cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);   //再关闭自动曝光
-    // cap.set(cv::CAP_PROP_EXPOSURE, 156);        // 曝光
-    std::thread threadA(timer_thread);
-    threadA.detach(); // 分离线程，允许后台运行
-    while (true)
-    {
-        // 从摄像头读取一帧图像
-        cap >> img; if (img.empty()) { break; }
+int run() {
+    cv::Mat frame;
 
-        img_erzhi = erzhihua(img);
-        fps_count++;
-        if (fps_count % 5 == 0)// 每10帧计算一次FPS
-        {
-            auto end_time = high_resolution_clock::now(); // 结束时间
-            duration<double> time_span = end_time - start_time; // 计算时间差
-            fps = fps_count / time_span.count(); // 计算帧率
-            fps_count = 0; // 重置帧数计数
-            start_time = high_resolution_clock::now(); // 重置开始时间
+    // Init Display
+    ips200_init("/dev/fb0");
+
+    // Register clean up function 
+    atexit(cleanup);
+
+    // Register SIGINT handler 
+    signal(SIGINT, sigint_handler);
+
+    // Init servo
+    servo_init();
+
+    // Init Motor
+    motor_init();
+    
+    // Init Controller
+    control_init(65, 65);
+
+    image_cv_Init();
+    Data_Settings();
+
+    while (true) {
+        image_cv_zip();
+
+        int center = imageprocess();
+        cv::Mat gray_image(60, 80, CV_8UC1);
+
+        cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
+
+        for (int i = 0; i < 60; ++i) {
+            for (int j = 0; j < 80; ++j) {
+                uchar v = img3[i][j];
+                cv::Vec3b color;
+
+                switch (v) {
+                    case 0:  color = cv::Vec3b(0, 0, 0);       break; // 黑色
+                    case 1:  color = cv::Vec3b(255, 255, 255); break; // 白色
+                    case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
+                    case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
+                    case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
+                    default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
+                }
+
+                color_image.at<cv::Vec3b>(i, j) = color;
+            }
         }
-
-        imageprocess();//图像处理
-
-        //test_l.disable();    
+        cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST); 
+        draw_rgb_img(color_image);
+        debug(center);
+        to_center(center, 39);
     }
-    cap.release();
-    return 0;
+    return 0;   
+}
+int main() {
+    std::cout << "version: idol" << std::endl;
+    return run();
 }
