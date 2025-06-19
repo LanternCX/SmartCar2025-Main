@@ -1,7 +1,6 @@
 #ifndef __IMAGE_CV_H__
 #define __IMAGE_CV_H__
 
-
 extern char img[60][80];
 extern char img3[60][80];
 extern char img4[60][160];
