@@ -91,6 +91,7 @@ int run() {
                     case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
                     case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
                     case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
+                    case 9:  color = cv::Vec3b(255, 255, 0);     break; // 蓝色
                     default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
                 }
 
@@ -99,7 +100,7 @@ int run() {
         }
         cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST); 
         // draw_rgb_img(color_image);
-        debug(center);
+        // debug(center);
         to_center(center, 39);
     }
     return 0;   

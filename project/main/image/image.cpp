@@ -73,7 +73,7 @@ void Data_Settings(void) //参数赋值
   ImageStatus.straight_acc = 0;
   ImageStatus.Road_type = zero;
 
-  ImageStatus.TowPoint = 24;
+  ImageStatus.TowPoint = 35;
   ImageStatus.Threshold_static = 70;  //静态阈值  40-80
   ImageStatus.Threshold_detach = 180; //阳光算法  亮斑分离140-220
   ImageScanInterval = 2;
@@ -1806,6 +1806,10 @@ static void get_imgdisplay() {
     img3[Ysite][ImageDeal[Ysite].LeftBorder] = 7;
     img3[Ysite][ImageDeal[Ysite].RightBorder] = 8;
   }
+  for (int i = 0; i < 80; i++) {
+    // img3[ImageStatus.TowPoint][i] = 9;
+    img3[ImageStatus.TowPoint_True][i] = 9;
+  }
 }
 
 int imageprocess(void) {
@@ -1843,10 +1847,10 @@ int imageprocess(void) {
   // printf("stop:%.2f\n",SystemData.SpeedData.Length);
   // printf("stop_BZW:%d\n",SystemData.Stop)
   // debug(ImageStatus.TowPoint_True);
-  printf("圆环进程：%d\n", ImageFlag.image_element_rings_flag);
-  if (ImageFlag.image_element_rings_flag) {
-    return ImageDeal[35].Center;
+  debug(ImageStatus.TowPoint_True);
+  if (circle_count_flag) {
+    return ImageDeal[ImageStatus.TowPoint].Center;
   } else {
-    return ImageDeal[35].Center;
+    return ImageDeal[ImageStatus.TowPoint_True].Center;
   }
 }
