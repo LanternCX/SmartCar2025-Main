@@ -8,8 +8,11 @@
 #include "LowPass.h"
 #include "Math.h"
 
-/**
- * 后轮操作相关函数
+ /**
+ * @file Motor.cpp
+ * @brief 后轮相关操作
+ * @author Cao Xin
+ * @date 2025-04-05
  */
 
 // Motor PWM Info
@@ -25,8 +28,8 @@ low_pass_param left_low_pass;
 low_pass_param right_low_pass;
 
 // Duty
-static int left_duty = 10;
-static int right_duty = 10;
+static int left_duty = 19;
+static int right_duty = 19;
 
 /**
  * @brief 初始化 PID 控制器
@@ -143,7 +146,7 @@ void set_left_speed(int speed){
     float det = increment_pid_solve(&left_pid, error);
 
     // 计算输出值
-    left_duty += det;
+    // left_duty += det;
 
     // 输出到电机控制
     left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
@@ -182,10 +185,10 @@ void set_right_speed(int speed){
     float det = increment_pid_solve(&right_pid, error);
     
     // 计算输出值
-    right_duty += det;
+    // right_duty += det;
 
     // 输出到电机控制
-    right_motor_run(abs(right_duty), right_duty > 0 ? 0 : 1);
+    right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
 
     // Debug 信息
     if(MOTOR_DEBUG){

@@ -61,3 +61,15 @@
 2. 逐飞助手接入
 3. 适配自研主板引角
 4. 自研上位机
+
+## 手动联网
+
+```bash
+wpa_supplicant -B -i wlan0 -c <(wpa_passphrase "Unknow" "buzhidao")
+sleep 3
+wpa_supplicant -B -i wlan0 -c <(wpa_passphrase "Unknow" "buzhidao")
+sleep 3
+udhcpc -i wlan0
+```
+
+然后如果是通过网线连接的话ssh会话会断开，直接在无线连接就好了。

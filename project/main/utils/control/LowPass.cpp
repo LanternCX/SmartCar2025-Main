@@ -1,7 +1,10 @@
 #include "LowPass.h"
 
 /**
- * 低通滤波器相关函数
+ * @file LowPass.cpp
+ * @brief 低通滤波相关操作
+ * @author Cao Xin
+ * @date 2025-04-05
  */
 
 /**

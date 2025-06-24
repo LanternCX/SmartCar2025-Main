@@ -48,9 +48,13 @@ include_directories(../main/utils/display)
 include_directories(../main/utils/control)
 include_directories(../main/utils/math)
 include_directories(../main/utils/time)
+include_directories(../main/utils/debug)
 include_directories(../main/image)
 include_directories(../main/vision)
 include_directories(../main/control)
+
+include_directories(../main/inc)
+include_directories(../main/src)
 
 # 从目录下查找C/C++文件
 aux_source_directory(../main DIR_SRCS)
@@ -64,8 +68,13 @@ aux_source_directory(../main/utils/display DIR_SRCS)
 aux_source_directory(../main/utils/control DIR_SRCS)
 aux_source_directory(../main/utils/math DIR_SRCS)
 aux_source_directory(../main/utils/time DIR_SRCS)
+aux_source_directory(../main/utils/debug DIR_SRCS)
 aux_source_directory(../main/vision DIR_SRCS)
 aux_source_directory(../main/control DIR_SRCS)
+aux_source_directory(../main/image DIR_SRCS)
+
+aux_source_directory(../main/inc DIR_SRCS)
+aux_source_directory(../main/src DIR_SRCS)
 
 # 创建可执行文件，使用项目名称作为目标名称
 add_executable(${PROJECT_NAME} ${DIR_SRCS})

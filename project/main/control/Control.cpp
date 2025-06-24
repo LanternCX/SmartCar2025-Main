@@ -3,11 +3,21 @@
 #include "LowPass.h"
 #include "Motor.h"
 #include "Servo.h"
-#include "Vision.h"
 #include "Control.h"
+#include "Debug.h"
 
+/**
+ * @file PID.cpp
+ * @brief 方向控制主要操作
+ * @author Cao Xin
+ * @date 2025-04-06
+ */
+
+// 方向环 PID 参数
 pid_param dir_pid;
+// 方向环低通参数
 low_pass_param dir_low_pass;
+// 当前速度参数
 speed_param speed;
 
 /**
@@ -24,9 +34,11 @@ void init_dir_pid(pid_param &pid){
     // v 70 - 20 lowpass 0.5 0.1 p 0.4 d 0.4 line -20
     // v 80 - 30 lowpass 0.5 0.1 p 0.4 d 0.6 line -70
     // v 100, 70 lowpass 0.6 0.1 p 0.3 d 0.95 line -50 no det
-    pid.kp = 0.30;
+    pid.kp = 1.10;
     pid.ki = 0.00;
-    pid.kd = 0.95;
+    pid.kd = 0.20;
+
+    pid.low_pass = 0.8;
 
     pid.p_max = 30.0;
     pid.i_max = 30.0;
@@ -43,10 +55,25 @@ void init_dir_pid(pid_param &pid){
     pid.pre_pre_error = 0.0;
 }
 
+/**
+ * @brief 初始化位置低通滤波器
+ * @param lowpass 低通滤波器参数结构体指针
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-06
+ */
 void init_dir_lowpass(low_pass_param &lowpass){
     lowpass.alpha = 0.5;
 }
 
+/**
+ * @brief 方向控制初始化
+ * @param line_speed 直线速度
+ * @param curve_speed 曲线速度
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-06
+ */
 void control_init(int line_speed, int curve_speed){
     init_dir_pid(dir_pid);
     init_dir_lowpass(dir_low_pass);
@@ -87,20 +114,27 @@ void to_center(int now, int target){
     }
 }
 
-void set_statue(Type type){
+/**
+ * @brief 速度决策状态机切换
+ * @param type 当前赛道类型枚举值
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-06
+ */
+// void set_statue(ElementType type){
     
-    if(type == LINE){
-        dir_low_pass.alpha = 0.1;
-        speed.current = speed.line_speed;
-        if(SERVO_DEBUG){
-            std::cerr << "servo-target: " << "LINE" << '\n';
-        }
-    }
-    if(type == CURVE){
-        dir_low_pass.alpha = 0.6;
-        speed.current = speed.curve_speed;
-        if(SERVO_DEBUG){
-            std::cerr << "servo-target: " << "CURVE" << '\n';
-        }
-    }
-}
+//     if(type == LINE){
+//         dir_low_pass.alpha = 0.6;
+//         speed.current = speed.line_speed;
+//         if(SERVO_DEBUG){
+//             std::cerr << "servo-target: " << "LINE" << '\n';
+//         }
+//     }
+//     if(type == L_CURVE || type == R_CURVE){
+//         dir_low_pass.alpha = 0.6;
+//         speed.current = speed.curve_speed;
+//         if(SERVO_DEBUG){
+//             std::cerr << "servo-target: " << "CURVE" << '\n';
+//         }
+//     }
+// }

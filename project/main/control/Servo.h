@@ -1,9 +1,11 @@
-#ifndef _SERVO_H_
-#define _SERVO_H_
-
 /**
- * 前轮舵机控制头文件
+ * @file Servo.h
+ * @brief 舵机操作头文件
+ * @author Cao Xin
+ * @date 2025-04-06
  */
+
+#pragma once
 
 // 定义驱动路劲，该路劲由设备树生成
 #define SERVO_MOTOR1_PWM "/dev/zf_device_pwm_servo"
@@ -23,7 +25,7 @@
 #define SERVO_MOTOR_DUTY(x) ((float)PWM_DUTY_MAX / (1000.0 / (float)SERVO_MOTOR_FREQ) * (0.5 + (float)(x) / 90.0))
 
 // 是否打开 Debug 模式
-#define SERVO_DEBUG 1
+#define SERVO_DEBUG 0
 typedef struct {
     /**
      * 舵机中线角度
@@ -34,4 +36,3 @@ typedef struct {
 void servo_init();
 void set_servo_duty(int duty);
 servo_params get_servo_param();
-#endif

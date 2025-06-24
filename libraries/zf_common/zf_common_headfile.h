@@ -66,7 +66,7 @@
 #include "zf_driver_encoder.h"
 #include "zf_driver_pwm.h"
 #include "zf_driver_adc.h"
-#include "zf_driver_pit.h"
+// #include "zf_driver_pit.h"
 // //#include "zf_driver_iic.h"
 // #include "zf_driver_pit.h"
 // #include "zf_driver_pwm.h"
@@ -83,7 +83,7 @@
 
 //===================================================外接设备驱动层===================================================
 #include "zf_device_ips200_fb.h"
-#include "zf_device_uvc.h"
+// #include "zf_device_uvc.h"
 #include "zf_device_imu_core.h"
 #include "zf_device_imu660ra.h"
 #include "zf_device_imu660rb.h"

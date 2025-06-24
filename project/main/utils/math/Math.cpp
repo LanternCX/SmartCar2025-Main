@@ -4,6 +4,13 @@
 #include "Math.h"
 
 /**
+ * @file Math.cpp
+ * @brief 数学相关工具
+ * @author Cao Xin
+ * @date 2025-04-05
+ */
+
+/**
  * @brief 限幅
  * @param a 输入值
  * @param min 最小值
@@ -12,7 +19,7 @@
  * @author Cao Xin
  * @date 2025-04-05
  */
-float minmax(float a, float min, float max){
+float clip(float a, float min, float max){
     if(a < min){
         return min;
     }
@@ -53,7 +60,7 @@ float max(float a, float b){
  * @author Cao Xin
  * @date 2025-04-13
  */
-line_params fit_line(const std::vector<cv::Point2f>& points) {
+line_params fit_line(const std::vector<cv::Point>& points) {
     line_params params = {0.0f, 0.0f, 0.0f, false};
 
     if (points.empty()) {
@@ -85,5 +92,3 @@ line_params fit_line(const std::vector<cv::Point2f>& points) {
 
     return params;
 }
-
-
