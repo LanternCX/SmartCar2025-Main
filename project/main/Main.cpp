@@ -69,6 +69,7 @@ int run() {
     control_init(65, 65);
 
     image_cv_Init();
+    
     Data_Settings();
 
     while (true) {
@@ -97,7 +98,7 @@ int run() {
             }
         }
         cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST); 
-        draw_rgb_img(color_image);
+        // draw_rgb_img(color_image);
         debug(center);
         to_center(center, 39);
     }

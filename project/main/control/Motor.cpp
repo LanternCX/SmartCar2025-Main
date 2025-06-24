@@ -28,8 +28,8 @@ low_pass_param left_low_pass;
 low_pass_param right_low_pass;
 
 // Duty
-static int left_duty = 15;
-static int right_duty = 15;
+static int left_duty = 19;
+static int right_duty = 19;
 
 /**
  * @brief 初始化 PID 控制器

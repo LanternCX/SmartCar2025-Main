@@ -1844,5 +1844,9 @@ int imageprocess(void) {
   // printf("stop_BZW:%d\n",SystemData.Stop)
   // debug(ImageStatus.TowPoint_True);
   printf("圆环进程：%d\n", ImageFlag.image_element_rings_flag);
-  return ImageDeal[ImageStatus.TowPoint_True].Center;
+  if (ImageFlag.image_element_rings_flag) {
+    return ImageDeal[35].Center;
+  } else {
+    return ImageDeal[35].Center;
+  }
 }
