@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
 #include <string>
 
 #include "zf_common_headfile.h"
@@ -10,7 +11,8 @@
 #include "Servo.h"
 #include "Time.h"
 #include "Debug.h"
-#include "Image.h"
+#include "image.hpp"
+#include "image_cv.hpp"
 
 /**
  * @file Main.cpp
@@ -45,27 +47,7 @@ void sigint_handler(int signum) {
     exit(0);
 }
 
-/**
- * @brief 给图像绘制黑色边框
- * @param image 输入的图像
- * @return none
- * @author Cao Xin
- * @date 2025-04-03
- */
-void draw_border(cv::Mat& image) {
-    if (image.empty()) return;
-    // 画矩形框
-    cv::rectangle(image, cv::Point(0, 0), cv::Point(image.cols - 1, image.rows - 1), cv::Scalar(0), 10);
-}
-
 int run() {
-    // Init cam
-    cv::VideoCapture cap(0);
-    if (!cap.isOpened()) {
-        std::cerr << "open cam 0 failed" << std::endl;
-        exit(0);
-        return -1;
-    }
     cv::Mat frame;
 
     // Init Display
@@ -86,68 +68,43 @@ int run() {
     // Init Controller
     control_init(65, 65);
 
+    image_cv_Init();
+    
+    Data_Settings();
+
     while (true) {
-        cap >> frame;
-        if (frame.empty()) {
-            std::cerr << "无法读取视频帧或视频已结束！" << std::endl;
-            break;
-        }
+        image_cv_zip();
 
-        // 不知道为什么 resize 会导致透视变换不可用
-        // cv::resize(frame, frame, cv::Size(), 0.5, 0.5);
+        int center = imageprocess();
+        cv::Mat gray_image(60, 80, CV_8UC1);
 
-        double alpha = 1.0;
-        int beta = 50;
-        frame.convertTo(frame, -1, alpha, beta);
+        cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
 
-        
-        cv::Mat gray;
-        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-        
-        draw_border(gray);
+        for (int i = 0; i < 60; ++i) {
+            for (int j = 0; j < 80; ++j) {
+                uchar v = img3[i][j];
+                cv::Vec3b color;
 
-        // Resize gray to desired size
-        cv::Mat resized_gray;
-        cv::resize(gray, resized_gray, cv::Size(Image_W, Image_H), 0, 0, cv::INTER_LINEAR);
+                switch (v) {
+                    case 0:  color = cv::Vec3b(0, 0, 0);       break; // 黑色
+                    case 1:  color = cv::Vec3b(255, 255, 255); break; // 白色
+                    case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
+                    case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
+                    case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
+                    default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
+                }
 
-        // 复制到 Original_Image
-        for (int i = 0; i < Image_H; i++) {
-            for (int j = 0; j < Image_W; j++) {
-                Original_Image[i][j] = resized_gray.at<uchar>(i, j);
+                color_image.at<cv::Vec3b>(i, j) = color;
             }
         }
-
-        Image_Process();
-
-        int err = Image_Erro;
-        debug(err);
-
-        to_center(err, 74);
+        cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST); 
+        // draw_rgb_img(color_image);
+        debug(center);
+        to_center(center, 39);
     }
     return 0;   
 }
-
-int test() {
-    // Init servo
-    servo_init();
-
-    // Init Motor
-    motor_init();
-
-    // Register clean up function 
-    atexit(cleanup);
-
-    // Register SIGINT handler 
-    signal(SIGINT, sigint_handler);
-
-    while(1) {
-        set_left_speed(100);
-        set_right_speed(100);
-    }
-
-    return 0;
-}
 int main() {
-    std::cout << "version: 1.0.3" << std::endl;
+    std::cout << "version: idol" << std::endl;
     return run();
 }
