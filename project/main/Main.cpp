@@ -13,6 +13,7 @@
 #include "Debug.h"
 #include "image.hpp"
 #include "image_cv.hpp"
+#include "Color.cpp"
 
 /**
  * @file Main.cpp
@@ -49,6 +50,7 @@ void sigint_handler(int signum) {
 
 int run() {
     cv::Mat frame;
+    cv::VideoCapture cap(0);
 
     // Init Display
     ips200_init("/dev/fb0");
@@ -73,10 +75,14 @@ int run() {
     Data_Settings();
 
     while (true) {
-        image_cv_zip();
+        cap >> frame;
+        image_cv_zip(frame);
 
         int center = imageprocess();
         cv::Mat gray_image(60, 80, CV_8UC1);
+
+        resize(frame, frame, cv::Size(160, 120));
+        ring_judge(frame);
 
         cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
 
@@ -98,12 +104,11 @@ int run() {
                 color_image.at<cv::Vec3b>(i, j) = color;
             }
         }
-        cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST); 
-        // draw_rgb_img(color_image);
-        // debug(center);
-        to_center(center, 39);
+        cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
+        
+        to_center(center, ImageStatus.MiddleLine);
     }
-    return 0;   
+    return 0;
 }
 int main() {
     std::cout << "version: idol" << std::endl;

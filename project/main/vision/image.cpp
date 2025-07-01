@@ -2,7 +2,9 @@
 #include "Debug.h"
 #include "image_cv.hpp"
 #include "zf_common_headfile.h"
+#include "zf_device_ips200_fb.h"
 #include <math.h>
+#include <string>
 
 int img1[60][80];       //图像二值化之后的数组
 int imgdisplay[60][80]; //打印到中端图像数组
@@ -64,7 +66,7 @@ void Data_Settings(void) //参数赋值
   ImageStatus.TowPoint_Offset_Max = 5;
   ImageStatus.TowPoint_Offset_Min = -2;
   ImageStatus.TowPointAdjust_v = 160;
-  ImageStatus.Det_all_k = 0.5; //待定自动补线斜率
+  ImageStatus.Det_all_k = 0.7; //待定自动补线斜率
   ImageStatus.CirquePass = 'F';
   ImageStatus.IsCinqueOutIn = 'F';
   ImageStatus.CirqueOut = 'F';
@@ -973,14 +975,22 @@ void GetDet() {
 
 void Element_Judgment_Left_Rings() {
 
-  if (ImageStatus.Right_Line > 5 || ImageStatus.Left_Line < 9 // 13
-      || ImageStatus.OFFLine > 10 || ImageDeal[58].RightBorder > 75 ||
-      ImageDeal[57].RightBorder > 75 || ImageDeal[56].RightBorder > 75 ||
-      ImageDeal[55].RightBorder > 75 || ImageDeal[54].RightBorder > 75 ||
-      ImageDeal[52].IsLeftFind == 'W' || ImageDeal[53].IsLeftFind == 'W' ||
-      ImageDeal[54].IsLeftFind == 'W' || ImageDeal[55].IsLeftFind == 'W' ||
-      ImageDeal[56].IsLeftFind == 'W' || ImageDeal[57].IsLeftFind == 'W' ||
-      ImageDeal[58].IsLeftFind == 'W') {
+  if (
+    ImageStatus.Right_Line > 5
+    || ImageStatus.Left_Line < 9 // 13
+    || ImageStatus.OFFLine > 10 
+    || ImageDeal[58].RightBorder > 75 
+    || ImageDeal[57].RightBorder > 75 
+    || ImageDeal[56].RightBorder > 75 
+    || ImageDeal[55].RightBorder > 75 
+    || ImageDeal[54].RightBorder > 75 
+    || ImageDeal[52].IsLeftFind == 'W' 
+    || ImageDeal[53].IsLeftFind == 'W' 
+    || ImageDeal[54].IsLeftFind == 'W' 
+    || ImageDeal[55].IsLeftFind == 'W' 
+    || ImageDeal[56].IsLeftFind == 'W' 
+    || ImageDeal[57].IsLeftFind == 'W' 
+    || ImageDeal[58].IsLeftFind == 'W') {
     return;
   }
   int ring_ysite = 25; // 25
@@ -988,8 +998,7 @@ void Element_Judgment_Left_Rings() {
   Left_RingsFlag_Point2_Ysite = 0;
   for (int Ysite = 58; Ysite > ring_ysite; Ysite--) {
     if (ImageDeal[Ysite].LeftBoundary_First -
-            ImageDeal[Ysite - 1].LeftBoundary_First >
-        6) {
+            ImageDeal[Ysite - 1].LeftBoundary_First > 6) {
       Left_RingsFlag_Point1_Ysite = Ysite;
       break;
     }
@@ -1017,15 +1026,11 @@ void Element_Judgment_Left_Rings() {
     if (ImageStatus.Left_Line > 13) // 13
       Ring_Help_Flag = 1;
   }
-  // debug(Left_RingsFlag_Point2_Ysite > Left_RingsFlag_Point1_Ysite+2);
-  // debug((int)Ring_Help_Flag);
-  // debug(ImageStatus.Left_Line > 12);
-  // debug(Left_RingsFlag_Point1_Ysite !=0);
-  // debug(Left_RingsFlag_Point2_Ysite);
-  // debug(Left_RingsFlag_Point2_Ysite - Left_RingsFlag_Point1_Ysite <10);
   if (Left_RingsFlag_Point2_Ysite > Left_RingsFlag_Point1_Ysite + 2 &&
-      Ring_Help_Flag == 1 && ImageFlag.image_element_rings_flag == 0 &&
-      ImageStatus.Left_Line > 12 && Left_RingsFlag_Point1_Ysite != 0 &&
+      Ring_Help_Flag == 1 && 
+      ImageFlag.image_element_rings_flag == 0 &&
+      ImageStatus.Left_Line > 12 && 
+      Left_RingsFlag_Point1_Ysite != 0 &&
       Left_RingsFlag_Point2_Ysite < 35 &&
       Left_RingsFlag_Point2_Ysite - Left_RingsFlag_Point1_Ysite < 10) {
 
@@ -1039,17 +1044,25 @@ void Element_Judgment_Left_Rings() {
 }
 
 void Element_Judgment_Right_Rings() {
-  if (ImageStatus.Left_Line > 5 || ImageStatus.Right_Line < 10 // 13
-      || ImageStatus.OFFLine > 10
+  if (ImageStatus.Left_Line > 20 || 
+      ImageStatus.Right_Line < 15 || 
+      ImageStatus.OFFLine > 21 || 
       //|| Straight_Judge(1, 15, 45) > 30
       //||  variance_acc>50
       //|| ImageStatus.WhiteLine>4
-      || ImageDeal[58].LeftBorder < 6 || ImageDeal[57].LeftBorder < 6 ||
-      ImageDeal[56].LeftBorder < 6 || ImageDeal[55].LeftBorder < 6 ||
-      ImageDeal[54].LeftBorder < 6 || ImageDeal[52].IsRightFind == 'W' ||
-      ImageDeal[53].IsRightFind == 'W' || ImageDeal[54].IsRightFind == 'W' ||
-      ImageDeal[55].IsRightFind == 'W' || ImageDeal[56].IsRightFind == 'W' ||
-      ImageDeal[57].IsRightFind == 'W' || ImageDeal[58].IsRightFind == 'W') {
+      ImageDeal[58].LeftBorder < 6 || 
+      ImageDeal[57].LeftBorder < 6 ||
+      ImageDeal[56].LeftBorder < 6 || 
+      ImageDeal[55].LeftBorder < 6 ||
+      ImageDeal[54].LeftBorder < 6 || 
+      ImageDeal[52].IsRightFind == 'W' ||
+      ImageDeal[53].IsRightFind == 'W' || 
+      ImageDeal[54].IsRightFind == 'W' ||
+      ImageDeal[55].IsRightFind == 'W' ||
+      ImageDeal[56].IsRightFind == 'W' ||
+      ImageDeal[57].IsRightFind == 'W' || 
+      ImageDeal[58].IsRightFind == 'W'
+    ) {
     return;
   }
   int ring_ysite = 5; // 5
@@ -1085,9 +1098,12 @@ void Element_Judgment_Right_Rings() {
     if (ImageStatus.Right_Line > 13)
       Ring_Help_Flag = 1;
   }
+
   if (Right_RingsFlag_Point2_Ysite > Right_RingsFlag_Point1_Ysite + 1 &&
-      Ring_Help_Flag == 1 && ImageFlag.image_element_rings_flag == 0 &&
-      ImageStatus.Right_Line > 13 && Right_RingsFlag_Point1_Ysite != 0 &&
+      Ring_Help_Flag == 1 && 
+      ImageFlag.image_element_rings_flag == 0 &&
+      ImageStatus.Right_Line > 13 && 
+      Right_RingsFlag_Point1_Ysite != 0 &&
       Right_RingsFlag_Point2_Ysite > 25
 
   ) {
@@ -1141,7 +1157,7 @@ void Element_Handle_Left_Rings() {
     // wireless_uart_send_byte(2);
   }
 
-  //    if( ImageFlag.image_element_rings_flag == 2 )
+  //    if( ImageFlag.image_element_r，rings_flag == 2 )
   //    {
   //        if( SaiDaoKuanDu() > 62)
   //        ImageFlag.image_element_rings_flag = 3;
@@ -1847,10 +1863,18 @@ int imageprocess(void) {
   // printf("stop:%.2f\n",SystemData.SpeedData.Length);
   // printf("stop_BZW:%d\n",SystemData.Stop)
   // debug(ImageStatus.TowPoint_True);
-  debug(ImageStatus.TowPoint_True);
-  if (circle_count_flag) {
-    return ImageDeal[ImageStatus.TowPoint].Center;
-  } else {
-    return ImageDeal[ImageStatus.TowPoint_True].Center;
+  // debug()
+  // debug(ImageStatus.TowPoint_True);
+  // debug(circle_count_flag);
+  debug(ImageFlag.image_element_rings_flag);
+  if (ImageFlag.image_element_rings_flag) {
   }
+  // if (ImageFlag.image_element_rings_flag == 0) {
+  //   return ImageDeal[ImageStatus.TowPoint_True].Center;
+  // } else if (ImageFlag.image_element_rings_flag > 0 && ImageFlag.image_element_rings_flag <= 2){
+  //   return ImageDeal[ImageStatus.TowPoint + 10].Center + 10;
+  // } else {
+  //   return ImageDeal[ImageStatus.TowPoint_Gain].Center;
+  // }
+  return ImageStatus.Det_True;
 }
