@@ -75,6 +75,9 @@ char image_cv_zip(cv::Mat src) {
   //第一个binary为要压缩的输入图像，第二个binary为压缩后的输出图像，第三个是压缩为80*60的大小
   resize(binary, binary, Size(160, 120));
 
+  if (ImageFlag.is_flip) {
+    flip(binary, binary, 1);
+  }
   // auto start2 = std::chrono::high_resolution_clock::now();
   // cv::threshold(gray, binary1, 0, 1, THRESH_BINARY + THRESH_OTSU);
   // cv::Mat resized2;

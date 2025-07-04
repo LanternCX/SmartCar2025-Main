@@ -91,6 +91,8 @@ void Data_Settings(void) //参数赋值
   Circle[0] = TP_O1;
   Circle[1] = TP_O2;
 
+  ImageFlag.is_flip = false;
+
   //   SteerPIDdata.Dl = 21.07;
   //   SteerPIDdata.Dh = 5.0;
   //   Left_Speed_Co_one_minus =0.06; Right_Speed_Co_one_minus=0.06 ;   //0.06
@@ -1050,11 +1052,11 @@ void Element_Judgment_Right_Rings() {
       //|| Straight_Judge(1, 15, 45) > 30
       //||  variance_acc>50
       //|| ImageStatus.WhiteLine>4
-      ImageDeal[58].LeftBorder < 6 || 
-      ImageDeal[57].LeftBorder < 6 ||
-      ImageDeal[56].LeftBorder < 6 || 
-      ImageDeal[55].LeftBorder < 6 ||
-      ImageDeal[54].LeftBorder < 6 || 
+      // ImageDeal[58].LeftBorder < 6 || 
+      // ImageDeal[57].LeftBorder < 6 ||
+      // ImageDeal[56].LeftBorder < 6 || 
+      // ImageDeal[55].LeftBorder < 6 ||
+      // ImageDeal[54].LeftBorder < 6 || 
       ImageDeal[52].IsRightFind == 'W' ||
       ImageDeal[53].IsRightFind == 'W' || 
       ImageDeal[54].IsRightFind == 'W' ||
@@ -1108,10 +1110,12 @@ void Element_Judgment_Right_Rings() {
 
   ) {
 
-    ImageFlag.image_element_rings = 2;
+    // 镜像之后直接当成左圆环处理
+    ImageFlag.image_element_rings = 1;
     ImageFlag.image_element_rings_flag = 1;
     ImageFlag.ring_big_small = 1; //小环
-    ImageStatus.Road_type = RightCirque;
+    ImageStatus.Road_type = LeftCirque;
+    ImageFlag.is_flip = true;
   }
   Ring_Help_Flag = 0;
 }
@@ -1263,6 +1267,7 @@ void Element_Handle_Left_Rings() {
       ImageFlag.image_element_rings = 0;
       ImageFlag.ring_big_small = 0;
       ImageStatus.Road_type = Normol;
+      ImageFlag.is_flip = false;
       // wireless_uart_send_byte(0);
       circle_num++;
     }
@@ -1744,11 +1749,11 @@ void Stop_Test2() { //弱保护
 }
 
 void Element_Handle() {
-  if (ImageFlag.image_element_rings == 1 && ImageStatus.Road_type == LeftCirque)
+  if (ImageFlag.image_element_rings == 1 && ImageStatus.Road_type == LeftCirque) {
     Element_Handle_Left_Rings();
-  else if (ImageFlag.image_element_rings == 2 &&
-           ImageStatus.Road_type == RightCirque)
-    Element_Handle_Right_Rings();
+  } else if (ImageFlag.image_element_rings == 2 && ImageStatus.Road_type == RightCirque) {
+    std::cout << "error";
+  }
 
   Element_Handle_Zebra(); //斑马线停车处理
 }
@@ -1876,5 +1881,8 @@ int imageprocess(void) {
   // } else {
   //   return ImageDeal[ImageStatus.TowPoint_Gain].Center;
   // }
+  if (ImageFlag.is_flip) {
+    ImageStatus.Det_True = 2 * ImageStatus.MiddleLine - ImageStatus.Det_True;
+  }
   return ImageStatus.Det_True;
 }

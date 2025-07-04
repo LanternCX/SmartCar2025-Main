@@ -25,7 +25,8 @@ vector<Rect> color_detect(const Mat& src, Mat& dst, const Scalar& low, const Sca
 
     int height = min(src.cols, src.rows);
     int width = max(src.cols, src.rows);
-    double min_area = (height * 0.03) * (width * 0.03);
+    float scale = 0.06;
+    double min_area = (height * scale) * (width * scale);
     src.copyTo(dst);
 
     // 1. BGR → HSV
@@ -83,23 +84,46 @@ int get_center_x(const vector<Rect>& rect) {
 }
 
 void ring_judge(cv::Mat frame) {
-    std::vector<cv::Rect> red = colorDetect(frame, frame, cv::Scalar(0, 48, 48), cv::Scalar(30, 255, 255));
+    std::vector<cv::Rect> red = color_detect(frame, frame, cv::Scalar(0, 48, 48), cv::Scalar(30, 255, 255));
+    // debug(red.size());
+    // if(ImageFlag.image_element_rings_flag == 10) {
+    //     ImageFlag.image_element_rings_flag = 0;
+    //     ImageFlag.image_element_rings = 0;
+    //     ImageFlag.ring_big_small = 0;
+    //     ImageStatus.Road_type = Normol;
+    // }
+    if (ImageFlag.image_element_rings_flag == 1 && red.empty()) {
+        // 与防止误判
+        ImageFlag.image_element_rings_flag = 0;
+        ImageFlag.image_element_rings = 0;
+        ImageFlag.ring_big_small = 0;
+        ImageStatus.Road_type = Normol;
+        return;
+    }
+    if (ImageFlag.image_element_rings_flag == 10 && red.empty()) {
+        // 出环处理
+        ImageFlag.image_element_rings_flag = 0;
+        ImageFlag.image_element_rings = 0;
+        ImageFlag.ring_big_small = 0;
+        ImageStatus.Road_type = Normol;
+        return;
+    }
     if (red.empty()) {
         return;
     }
-    
     int x = get_center_x(red);
-    if (x < ImageStatus.MiddleLine && ImageFlag.image_element_rings_flag == 0) {
-        debug("Left Ring");
+    if (x > ImageStatus.MiddleLine && ImageFlag.image_element_rings_flag == 0) {
+        // debug("Left Ring");
         ImageFlag.image_element_rings = 1;
         ImageFlag.image_element_rings_flag = 1;
         ImageFlag.ring_big_small = 1;
         ImageStatus.Road_type = LeftCirque;
-    } else if (x > ImageStatus.MiddleLine && ImageFlag.image_element_rings_flag == 0) {
-        debug("Right Ring");
-        ImageFlag.image_element_rings = 2;
+    } else if (x < ImageStatus.MiddleLine && ImageFlag.image_element_rings_flag == 0) {
+        // debug("Right Ring");
+        ImageFlag.image_element_rings = 1;
         ImageFlag.image_element_rings_flag = 1;
         ImageFlag.ring_big_small = 1;
-        ImageStatus.Road_type = RightCirque;
+        ImageStatus.Road_type = LeftCirque;
+        ImageFlag.is_flip = true;
     }
 }

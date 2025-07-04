@@ -28,7 +28,7 @@ low_pass_param left_low_pass;
 low_pass_param right_low_pass;
 
 // Duty
-static int left_duty = 15;
+static int left_duty = 17;
 static int right_duty = 15;
 
 /**
@@ -157,6 +157,7 @@ void set_left_speed(int speed){
         static int leftOut[100];
         cnt1++;
         cnt1 %= 100;
+        
         // std::cout << "duty-l: " <<  left_duty << " now-l: " << now << " target-l: " << speed << " error-l: " << error << '\n';
         leftOut[cnt1] = now;
         for(int i = 0; i < 100; i++){

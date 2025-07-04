@@ -13,7 +13,7 @@
 #include "Debug.h"
 #include "image.hpp"
 #include "image_cv.hpp"
-#include "Color.cpp"
+#include "Color.hpp"
 
 /**
  * @file Main.cpp
@@ -81,8 +81,8 @@ int run() {
         int center = imageprocess();
         cv::Mat gray_image(60, 80, CV_8UC1);
 
-        resize(frame, frame, cv::Size(160, 120));
-        ring_judge(frame);
+        resize(frame, frame, cv::Size(80, 60));
+        // ring_judge(frame);   
 
         cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
 
@@ -105,7 +105,7 @@ int run() {
             }
         }
         cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
-        
+        // draw_rgb_img(color_image);
         to_center(center, ImageStatus.MiddleLine);
     }
     return 0;
