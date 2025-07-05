@@ -82,7 +82,7 @@ int run() {
         cv::Mat gray_image(60, 80, CV_8UC1);
 
         resize(frame, frame, cv::Size(80, 60));
-        // ring_judge(frame);   
+        ring_judge(frame);
 
         cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
 
@@ -106,6 +106,7 @@ int run() {
         }
         cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
         // draw_rgb_img(color_image);
+        // debug(center);
         to_center(center, ImageStatus.MiddleLine);
     }
     return 0;

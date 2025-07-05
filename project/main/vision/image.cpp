@@ -31,7 +31,7 @@ static float DetR = 0, DetL = 0;   //存放斜率
 static int ytemp = 0;              //存放行
 
 uint8 Circle[5];
-uint8 TP = 25, TP_O1 = 25, TP_O2 = 25;
+uint8 TP = 35, TP_O1 = 35, TP_O2 = 35;
 uint32 circle_count_flag = 0;
 
 float Weighting[10] = {0.96, 0.92, 0.88, 0.83, 0.77,
@@ -92,6 +92,7 @@ void Data_Settings(void) //参数赋值
   Circle[1] = TP_O2;
 
   ImageFlag.is_flip = false;
+  ImageFlag.stat_from = 0;
 
   //   SteerPIDdata.Dl = 21.07;
   //   SteerPIDdata.Dh = 5.0;
@@ -1040,6 +1041,8 @@ void Element_Judgment_Left_Rings() {
     ImageFlag.image_element_rings_flag = 1;
     ImageFlag.ring_big_small = 1;
     ImageStatus.Road_type = LeftCirque;
+
+    ImageFlag.stat_from = 1;
     // szr=1;
   }
   Ring_Help_Flag = 0;
@@ -1115,7 +1118,9 @@ void Element_Judgment_Right_Rings() {
     ImageFlag.image_element_rings_flag = 1;
     ImageFlag.ring_big_small = 1; //小环
     ImageStatus.Road_type = LeftCirque;
+
     ImageFlag.is_flip = true;
+    ImageFlag.stat_from = 1;
   }
   Ring_Help_Flag = 0;
 }
@@ -1263,11 +1268,13 @@ void Element_Handle_Left_Rings() {
     }
     if (num < 5) {
       //                ImageStatus.Road_type = 0;   //出环处理完道路类型清0
-      ImageFlag.image_element_rings_flag = 0;
-      ImageFlag.image_element_rings = 0;
-      ImageFlag.ring_big_small = 0;
-      ImageStatus.Road_type = Normol;
-      ImageFlag.is_flip = false;
+      // ImageFlag.image_element_rings_flag = 0;
+      // ImageFlag.image_element_rings = 0;
+      // ImageFlag.ring_big_small = 0;
+      // ImageStatus.Road_type = Normol;
+      // ImageFlag.is_flip = false;
+
+      ImageFlag.image_element_rings_flag = 10;
       // wireless_uart_send_byte(0);
       circle_num++;
     }
@@ -1542,10 +1549,13 @@ void Element_Handle_Right_Rings() {
     // szr=num;
     if (num < 10) {
       // ImageStatus.Road_type = 0;   //出环处理完道路类型清0
-      ImageFlag.image_element_rings_flag = 0;
-      ImageFlag.image_element_rings = 0;
-      ImageFlag.ring_big_small = 0;
-      ImageStatus.Road_type = Normol;
+      
+      // ImageFlag.image_element_rings_flag = 0;
+      // ImageFlag.image_element_rings = 0;
+      // ImageFlag.ring_big_small = 0;
+      // ImageStatus.Road_type = Normol;
+
+      ImageFlag.image_element_rings_flag = 10;
       //            Front_Ring_Continue_Count++;
       circle_num++;
     }
@@ -1871,8 +1881,8 @@ int imageprocess(void) {
   // debug()
   // debug(ImageStatus.TowPoint_True);
   // debug(circle_count_flag);
-  debug(ImageFlag.image_element_rings_flag);
   if (ImageFlag.image_element_rings_flag) {
+    debug(ImageFlag.image_element_rings_flag);
   }
   // if (ImageFlag.image_element_rings_flag == 0) {
   //   return ImageDeal[ImageStatus.TowPoint_True].Center;
@@ -1884,5 +1894,7 @@ int imageprocess(void) {
   if (ImageFlag.is_flip) {
     ImageStatus.Det_True = 2 * ImageStatus.MiddleLine - ImageStatus.Det_True;
   }
+  // debug(ImageStatus.TowPoint_True);
+  // debug(ImageStatus.OFFLine);
   return ImageStatus.Det_True;
 }

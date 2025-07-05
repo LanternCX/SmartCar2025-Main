@@ -5,6 +5,7 @@
 #include "Servo.h"
 #include "Control.h"
 #include "Debug.h"
+#include "image.hpp"
 
 /**
  * @file PID.cpp
@@ -92,11 +93,8 @@ void control_init(int line_speed, int curve_speed){
 void to_center(int now, int target){
     static int error = 0;
     static int servo_duty_det = 0;
-    if(now != -1){
-        error = target - now;
-        error = low_pass_filter(&dir_low_pass, error);
-        servo_duty_det = pid_slove(&dir_pid, error);
-    }
+    error = target - now;
+    servo_duty_det = pid_slove(&dir_pid, error);
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
     
     // 计算差速比 10% pre 5 degree 
@@ -104,6 +102,10 @@ void to_center(int now, int target){
     det = 0;
     set_left_speed(speed.current + det);
     set_right_speed(speed.current - det);
+
+    // if (ImageStatus.OFFLine > ImageStatus.TowPoint) {
+
+    // }
 
     if(SERVO_DEBUG){
         // std::cerr << "servo-target: " << target << ' ';
@@ -121,20 +123,6 @@ void to_center(int now, int target){
  * @author Cao Xin
  * @date 2025-04-06
  */
-// void set_statue(ElementType type){
+void set_statue(){
     
-//     if(type == LINE){
-//         dir_low_pass.alpha = 0.6;
-//         speed.current = speed.line_speed;
-//         if(SERVO_DEBUG){
-//             std::cerr << "servo-target: " << "LINE" << '\n';
-//         }
-//     }
-//     if(type == L_CURVE || type == R_CURVE){
-//         dir_low_pass.alpha = 0.6;
-//         speed.current = speed.curve_speed;
-//         if(SERVO_DEBUG){
-//             std::cerr << "servo-target: " << "CURVE" << '\n';
-//         }
-//     }
-// }
+}
