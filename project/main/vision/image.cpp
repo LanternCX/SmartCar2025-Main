@@ -31,7 +31,7 @@ static float DetR = 0, DetL = 0;   //存放斜率
 static int ytemp = 0;              //存放行
 
 uint8 Circle[5];
-uint8 TP = 35, TP_O1 = 35, TP_O2 = 35;
+uint8 TP = 25, TP_O1 = 25, TP_O2 = 25;
 uint32 circle_count_flag = 0;
 
 float Weighting[10] = {0.96, 0.92, 0.88, 0.83, 0.77,

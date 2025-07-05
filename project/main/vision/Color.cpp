@@ -10,7 +10,7 @@
 #include "Debug.h"
 #include "Display.h"
 
-#include "Main.h"
+#include "Main.hpp"
 #include "zf_driver_gpio.h"
 
 using namespace cv;

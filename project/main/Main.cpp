@@ -1,10 +1,11 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 #include <string>
+#include <thread>
+#include <atomic>
 
 #include "zf_common_headfile.h"
 
-#include "Main.h"
 #include "Display.h"
 #include "Motor.h"
 #include "Control.h"
@@ -14,6 +15,7 @@
 #include "image.hpp"
 #include "image_cv.hpp"
 #include "Color.hpp"
+#include "Main.hpp"
 
 /**
  * @file Main.cpp
@@ -21,6 +23,10 @@
  * @author Cao Xin
  * @date 2025-04-03
  */
+
+std::thread control;
+
+std::atomic<bool> running(true);
 
 /**
  * @brief 程序退出时清理函数
@@ -30,6 +36,12 @@
  */
 void cleanup() { 
     printf("clean up...\n");
+
+    // Close control thread
+    running.store(false);
+    if (control.joinable()) {
+        control.join();
+    }
 
     // Power off the Motor
     pwm_set_duty(MOTOR1_PWM, 0);   
@@ -46,6 +58,13 @@ void cleanup() {
 void sigint_handler(int signum) {
     printf("exit..\n");
     exit(0);
+}
+
+void timer_thread() {
+    while (running.load()) {
+        to_center(ImageStatus.Det_True, ImageStatus.MiddleLine);
+        std::this_thread::sleep_for(timer_interval);
+    }
 }
 
 int run() {
@@ -70,44 +89,50 @@ int run() {
     // Init Controller
     control_init(65, 65);
 
+    // Init image opencv
     image_cv_Init();
     
+    // Init image process
     Data_Settings();
 
+    // control thread
+    control = std::thread(timer_thread);
+
+    // main loop (image process)
     while (true) {
         cap >> frame;
+
+        // gray frame process
         image_cv_zip(frame);
+        imageprocess();
 
-        int center = imageprocess();
-        cv::Mat gray_image(60, 80, CV_8UC1);
-
+        // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
         ring_judge(frame);
 
-        cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
+        // cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
 
-        for (int i = 0; i < 60; ++i) {
-            for (int j = 0; j < 80; ++j) {
-                uchar v = img3[i][j];
-                cv::Vec3b color;
+        // for (int i = 0; i < 60; ++i) {
+        //     for (int j = 0; j < 80; ++j) {
+        //         uchar v = img3[i][j];
+        //         cv::Vec3b color;
 
-                switch (v) {
-                    case 0:  color = cv::Vec3b(0, 0, 0);       break; // 黑色
-                    case 1:  color = cv::Vec3b(255, 255, 255); break; // 白色
-                    case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
-                    case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
-                    case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
-                    case 9:  color = cv::Vec3b(255, 255, 0);     break; // 蓝色
-                    default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
-                }
+        //         switch (v) {
+        //             case 0:  color = cv::Vec3b(0, 0, 0);       break; // 黑色
+        //             case 1:  color = cv::Vec3b(255, 255, 255); break; // 白色
+        //             case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
+        //             case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
+        //             case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
+        //             case 9:  color = cv::Vec3b(255, 255, 0);     break; // 蓝色
+        //             default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
+        //         }
 
-                color_image.at<cv::Vec3b>(i, j) = color;
-            }
-        }
-        cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
+        //         color_image.at<cv::Vec3b>(i, j) = color;
+        //     }
+        // }
+        // cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
         // draw_rgb_img(color_image);
-        // debug(center);
-        to_center(center, ImageStatus.MiddleLine);
+        // debug(center);   
     }
     return 0;
 }
