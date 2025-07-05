@@ -2,7 +2,9 @@
 #include "Debug.h"
 #include "image_cv.hpp"
 #include "zf_common_headfile.h"
+#include "zf_device_ips200_fb.h"
 #include <math.h>
+#include <string>
 
 int img1[60][80];       //图像二值化之后的数组
 int imgdisplay[60][80]; //打印到中端图像数组
@@ -64,7 +66,7 @@ void Data_Settings(void) //参数赋值
   ImageStatus.TowPoint_Offset_Max = 5;
   ImageStatus.TowPoint_Offset_Min = -2;
   ImageStatus.TowPointAdjust_v = 160;
-  ImageStatus.Det_all_k = 0.5; //待定自动补线斜率
+  ImageStatus.Det_all_k = 0.7; //待定自动补线斜率
   ImageStatus.CirquePass = 'F';
   ImageStatus.IsCinqueOutIn = 'F';
   ImageStatus.CirqueOut = 'F';
@@ -88,6 +90,9 @@ void Data_Settings(void) //参数赋值
 
   Circle[0] = TP_O1;
   Circle[1] = TP_O2;
+
+  ImageFlag.is_flip = false;
+  ImageFlag.stat_from = 0;
 
   //   SteerPIDdata.Dl = 21.07;
   //   SteerPIDdata.Dh = 5.0;
@@ -905,67 +910,84 @@ static void RouteFilter(void) {
   }
 }
 
+// void GetDet() {
+//   float DetTemp = 0;
+//   int TowPoint = 0;
+//   float UnitAll = 0;
+
+//   // Speed_Control_Factor();
+
+//   /*固定圆环前瞻*/
+//   if (ImageStatus.image_element_rings_flag != 0)
+//     TowPoint = Circle[circle_count_flag];
+//   //   else if(ImageStatus.Road_type ==Cross_ture)
+//   //   {
+//   //     TowPoint=29;
+//   //   }
+//   else
+//     TowPoint = ImageStatus.TowPoint; //初始前瞻
+//   if (TowPoint < ImageStatus.OFFLine)
+//     TowPoint = ImageStatus.OFFLine + 1; //前瞻限幅
+//   if (TowPoint >= 49)
+//     TowPoint = 49;
+
+//   if ((TowPoint - 5) >=
+//       ImageStatus.OFFLine) //前瞻取设定前瞻还是可视距离  需要分情况讨论
+//                            //正常前瞻（与截止行相差5行）
+//   {
+//     for (int Ysite = (TowPoint - 5); Ysite < TowPoint; Ysite++) {
+//       DetTemp =
+//           DetTemp + Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
+//       UnitAll = UnitAll + Weighting[TowPoint - Ysite - 1];
+//     }
+//     for (Ysite = (TowPoint + 5); Ysite > TowPoint; Ysite--) {
+//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+//       UnitAll += Weighting[-TowPoint + Ysite - 1];
+//     }
+//     DetTemp = (ImageDeal[TowPoint].Center + DetTemp) / (UnitAll + 1);
+
+//   } else if (TowPoint > ImageStatus.OFFLine) //正常前瞻与截止行不相差5行
+//   {
+//     for (Ysite = ImageStatus.OFFLine; Ysite < TowPoint; Ysite++) {
+//       DetTemp += Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
+//       UnitAll += Weighting[TowPoint - Ysite - 1];
+//     }
+//     for (Ysite = (TowPoint + TowPoint - ImageStatus.OFFLine); Ysite > TowPoint;
+//          Ysite--) {
+//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+//       UnitAll += Weighting[-TowPoint + Ysite - 1];
+//     }
+//     DetTemp = (ImageDeal[Ysite].Center + DetTemp) / (UnitAll + 1);
+//   } else if (ImageStatus.OFFLine < 49) //前瞻等于截至行
+//   {
+//     for (Ysite = (ImageStatus.OFFLine + 3); Ysite > ImageStatus.OFFLine;
+//          Ysite--) {
+//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+//       UnitAll += Weighting[-TowPoint + Ysite - 1];
+//     }
+//     DetTemp = (ImageDeal[ImageStatus.OFFLine].Center + DetTemp) / (UnitAll + 1);
+
+//   } else {
+//     DetTemp = ImageStatus.Det_True;
+//   }
+
+//   ImageStatus.Det_True = DetTemp;
+
+//   ImageStatus.TowPoint_True = TowPoint;
+// }
+
+
 void GetDet() {
   float DetTemp = 0;
   int TowPoint = 0;
-  float UnitAll = 0;
 
-  // Speed_Control_Factor();
-
-  /*固定圆环前瞻*/
-  if (ImageStatus.image_element_rings_flag != 0)
-    TowPoint = Circle[circle_count_flag];
-  //   else if(ImageStatus.Road_type ==Cross_ture)
-  //   {
-  //     TowPoint=29;
-  //   }
-  else
-    TowPoint = ImageStatus.TowPoint; //初始前瞻
-  if (TowPoint < ImageStatus.OFFLine)
-    TowPoint = ImageStatus.OFFLine + 1; //前瞻限幅
-  if (TowPoint >= 49)
-    TowPoint = 49;
-
-  if ((TowPoint - 5) >=
-      ImageStatus.OFFLine) //前瞻取设定前瞻还是可视距离  需要分情况讨论
-                           //正常前瞻（与截止行相差5行）
-  {
-    for (int Ysite = (TowPoint - 5); Ysite < TowPoint; Ysite++) {
-      DetTemp =
-          DetTemp + Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
-      UnitAll = UnitAll + Weighting[TowPoint - Ysite - 1];
-    }
-    for (Ysite = (TowPoint + 5); Ysite > TowPoint; Ysite--) {
-      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-      UnitAll += Weighting[-TowPoint + Ysite - 1];
-    }
-    DetTemp = (ImageDeal[TowPoint].Center + DetTemp) / (UnitAll + 1);
-
-  } else if (TowPoint > ImageStatus.OFFLine) //正常前瞻与截止行不相差5行
-  {
-    for (Ysite = ImageStatus.OFFLine; Ysite < TowPoint; Ysite++) {
-      DetTemp += Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
-      UnitAll += Weighting[TowPoint - Ysite - 1];
-    }
-    for (Ysite = (TowPoint + TowPoint - ImageStatus.OFFLine); Ysite > TowPoint;
-         Ysite--) {
-      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-      UnitAll += Weighting[-TowPoint + Ysite - 1];
-    }
-    DetTemp = (ImageDeal[Ysite].Center + DetTemp) / (UnitAll + 1);
-  } else if (ImageStatus.OFFLine < 49) //前瞻等于截至行
-  {
-    for (Ysite = (ImageStatus.OFFLine + 3); Ysite > ImageStatus.OFFLine;
-         Ysite--) {
-      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-      UnitAll += Weighting[-TowPoint + Ysite - 1];
-    }
-    DetTemp = (ImageDeal[ImageStatus.OFFLine].Center + DetTemp) / (UnitAll + 1);
-
+  if (ImageFlag.image_element_rings_flag) {
+    TowPoint = Circle[ImageFlag.image_element_rings];
   } else {
-    DetTemp = ImageStatus.Det_True;
+    TowPoint = ImageStatus.TowPoint;
   }
-
+  DetTemp = ImageDeal[TowPoint].Center;
+  
   ImageStatus.Det_True = DetTemp;
 
   ImageStatus.TowPoint_True = TowPoint;
@@ -973,14 +995,22 @@ void GetDet() {
 
 void Element_Judgment_Left_Rings() {
 
-  if (ImageStatus.Right_Line > 5 || ImageStatus.Left_Line < 9 // 13
-      || ImageStatus.OFFLine > 10 || ImageDeal[58].RightBorder > 75 ||
-      ImageDeal[57].RightBorder > 75 || ImageDeal[56].RightBorder > 75 ||
-      ImageDeal[55].RightBorder > 75 || ImageDeal[54].RightBorder > 75 ||
-      ImageDeal[52].IsLeftFind == 'W' || ImageDeal[53].IsLeftFind == 'W' ||
-      ImageDeal[54].IsLeftFind == 'W' || ImageDeal[55].IsLeftFind == 'W' ||
-      ImageDeal[56].IsLeftFind == 'W' || ImageDeal[57].IsLeftFind == 'W' ||
-      ImageDeal[58].IsLeftFind == 'W') {
+  if (
+    ImageStatus.Right_Line > 5
+    || ImageStatus.Left_Line < 9 // 13
+    || ImageStatus.OFFLine > 10 
+    || ImageDeal[58].RightBorder > 75 
+    || ImageDeal[57].RightBorder > 75 
+    || ImageDeal[56].RightBorder > 75 
+    || ImageDeal[55].RightBorder > 75 
+    || ImageDeal[54].RightBorder > 75 
+    || ImageDeal[52].IsLeftFind == 'W' 
+    || ImageDeal[53].IsLeftFind == 'W' 
+    || ImageDeal[54].IsLeftFind == 'W' 
+    || ImageDeal[55].IsLeftFind == 'W' 
+    || ImageDeal[56].IsLeftFind == 'W' 
+    || ImageDeal[57].IsLeftFind == 'W' 
+    || ImageDeal[58].IsLeftFind == 'W') {
     return;
   }
   int ring_ysite = 25; // 25
@@ -988,8 +1018,7 @@ void Element_Judgment_Left_Rings() {
   Left_RingsFlag_Point2_Ysite = 0;
   for (int Ysite = 58; Ysite > ring_ysite; Ysite--) {
     if (ImageDeal[Ysite].LeftBoundary_First -
-            ImageDeal[Ysite - 1].LeftBoundary_First >
-        6) {
+            ImageDeal[Ysite - 1].LeftBoundary_First > 6) {
       Left_RingsFlag_Point1_Ysite = Ysite;
       break;
     }
@@ -1017,15 +1046,11 @@ void Element_Judgment_Left_Rings() {
     if (ImageStatus.Left_Line > 13) // 13
       Ring_Help_Flag = 1;
   }
-  // debug(Left_RingsFlag_Point2_Ysite > Left_RingsFlag_Point1_Ysite+2);
-  // debug((int)Ring_Help_Flag);
-  // debug(ImageStatus.Left_Line > 12);
-  // debug(Left_RingsFlag_Point1_Ysite !=0);
-  // debug(Left_RingsFlag_Point2_Ysite);
-  // debug(Left_RingsFlag_Point2_Ysite - Left_RingsFlag_Point1_Ysite <10);
   if (Left_RingsFlag_Point2_Ysite > Left_RingsFlag_Point1_Ysite + 2 &&
-      Ring_Help_Flag == 1 && ImageFlag.image_element_rings_flag == 0 &&
-      ImageStatus.Left_Line > 12 && Left_RingsFlag_Point1_Ysite != 0 &&
+      Ring_Help_Flag == 1 && 
+      ImageFlag.image_element_rings_flag == 0 &&
+      ImageStatus.Left_Line > 12 && 
+      Left_RingsFlag_Point1_Ysite != 0 &&
       Left_RingsFlag_Point2_Ysite < 35 &&
       Left_RingsFlag_Point2_Ysite - Left_RingsFlag_Point1_Ysite < 10) {
 
@@ -1033,23 +1058,33 @@ void Element_Judgment_Left_Rings() {
     ImageFlag.image_element_rings_flag = 1;
     ImageFlag.ring_big_small = 1;
     ImageStatus.Road_type = LeftCirque;
+
+    ImageFlag.stat_from = 1;
     // szr=1;
   }
   Ring_Help_Flag = 0;
 }
 
 void Element_Judgment_Right_Rings() {
-  if (ImageStatus.Left_Line > 5 || ImageStatus.Right_Line < 10 // 13
-      || ImageStatus.OFFLine > 10
+  if (ImageStatus.Left_Line > 9 || 
+      ImageStatus.Right_Line < 5 || 
+      ImageStatus.OFFLine > 10 || 
       //|| Straight_Judge(1, 15, 45) > 30
       //||  variance_acc>50
       //|| ImageStatus.WhiteLine>4
-      || ImageDeal[58].LeftBorder < 6 || ImageDeal[57].LeftBorder < 6 ||
-      ImageDeal[56].LeftBorder < 6 || ImageDeal[55].LeftBorder < 6 ||
-      ImageDeal[54].LeftBorder < 6 || ImageDeal[52].IsRightFind == 'W' ||
-      ImageDeal[53].IsRightFind == 'W' || ImageDeal[54].IsRightFind == 'W' ||
-      ImageDeal[55].IsRightFind == 'W' || ImageDeal[56].IsRightFind == 'W' ||
-      ImageDeal[57].IsRightFind == 'W' || ImageDeal[58].IsRightFind == 'W') {
+      ImageDeal[58].LeftBorder < 6 || 
+      ImageDeal[57].LeftBorder < 6 ||
+      ImageDeal[56].LeftBorder < 6 || 
+      ImageDeal[55].LeftBorder < 6 ||
+      ImageDeal[54].LeftBorder < 6 || 
+      ImageDeal[52].IsRightFind == 'W' ||
+      ImageDeal[53].IsRightFind == 'W' || 
+      ImageDeal[54].IsRightFind == 'W' ||
+      ImageDeal[55].IsRightFind == 'W' ||
+      ImageDeal[56].IsRightFind == 'W' ||
+      ImageDeal[57].IsRightFind == 'W' || 
+      ImageDeal[58].IsRightFind == 'W'
+    ) {
     return;
   }
   int ring_ysite = 5; // 5
@@ -1085,17 +1120,24 @@ void Element_Judgment_Right_Rings() {
     if (ImageStatus.Right_Line > 13)
       Ring_Help_Flag = 1;
   }
+
   if (Right_RingsFlag_Point2_Ysite > Right_RingsFlag_Point1_Ysite + 1 &&
-      Ring_Help_Flag == 1 && ImageFlag.image_element_rings_flag == 0 &&
-      ImageStatus.Right_Line > 13 && Right_RingsFlag_Point1_Ysite != 0 &&
+      Ring_Help_Flag == 1 && 
+      ImageFlag.image_element_rings_flag == 0 &&
+      ImageStatus.Right_Line > 13 && 
+      Right_RingsFlag_Point1_Ysite != 0 &&
       Right_RingsFlag_Point2_Ysite > 25
 
   ) {
 
-    ImageFlag.image_element_rings = 2;
+    // 镜像之后直接当成左圆环处理
+    ImageFlag.image_element_rings = 1;
     ImageFlag.image_element_rings_flag = 1;
     ImageFlag.ring_big_small = 1; //小环
-    ImageStatus.Road_type = RightCirque;
+    ImageStatus.Road_type = LeftCirque;
+
+    ImageFlag.is_flip = true;
+    ImageFlag.stat_from = 1;
   }
   Ring_Help_Flag = 0;
 }
@@ -1141,7 +1183,7 @@ void Element_Handle_Left_Rings() {
     // wireless_uart_send_byte(2);
   }
 
-  //    if( ImageFlag.image_element_rings_flag == 2 )
+  //    if( ImageFlag.image_element_r，rings_flag == 2 )
   //    {
   //        if( SaiDaoKuanDu() > 62)
   //        ImageFlag.image_element_rings_flag = 3;
@@ -1243,10 +1285,13 @@ void Element_Handle_Left_Rings() {
     }
     if (num < 5) {
       //                ImageStatus.Road_type = 0;   //出环处理完道路类型清0
-      ImageFlag.image_element_rings_flag = 0;
-      ImageFlag.image_element_rings = 0;
-      ImageFlag.ring_big_small = 0;
-      ImageStatus.Road_type = Normol;
+      // ImageFlag.image_element_rings_flag = 0;
+      // ImageFlag.image_element_rings = 0;
+      // ImageFlag.ring_big_small = 0;
+      // ImageStatus.Road_type = Normol;
+      // ImageFlag.is_flip = false;
+
+      ImageFlag.image_element_rings_flag = 10;
       // wireless_uart_send_byte(0);
       circle_num++;
     }
@@ -1521,10 +1566,13 @@ void Element_Handle_Right_Rings() {
     // szr=num;
     if (num < 10) {
       // ImageStatus.Road_type = 0;   //出环处理完道路类型清0
-      ImageFlag.image_element_rings_flag = 0;
-      ImageFlag.image_element_rings = 0;
-      ImageFlag.ring_big_small = 0;
-      ImageStatus.Road_type = Normol;
+      
+      // ImageFlag.image_element_rings_flag = 0;
+      // ImageFlag.image_element_rings = 0;
+      // ImageFlag.ring_big_small = 0;
+      // ImageStatus.Road_type = Normol;
+
+      ImageFlag.image_element_rings_flag = 10;
       //            Front_Ring_Continue_Count++;
       circle_num++;
     }
@@ -1728,11 +1776,11 @@ void Stop_Test2() { //弱保护
 }
 
 void Element_Handle() {
-  if (ImageFlag.image_element_rings == 1 && ImageStatus.Road_type == LeftCirque)
+  if (ImageFlag.image_element_rings == 1 && ImageStatus.Road_type == LeftCirque) {
     Element_Handle_Left_Rings();
-  else if (ImageFlag.image_element_rings == 2 &&
-           ImageStatus.Road_type == RightCirque)
-    Element_Handle_Right_Rings();
+  } else if (ImageFlag.image_element_rings == 2 && ImageStatus.Road_type == RightCirque) {
+    std::cout << "error";
+  }
 
   Element_Handle_Zebra(); //斑马线停车处理
 }
@@ -1806,6 +1854,10 @@ static void get_imgdisplay() {
     img3[Ysite][ImageDeal[Ysite].LeftBorder] = 7;
     img3[Ysite][ImageDeal[Ysite].RightBorder] = 8;
   }
+  for (int i = 0; i < 80; i++) {
+    // img3[ImageStatus.TowPoint][i] = 9;
+    img3[ImageStatus.TowPoint_True][i] = 9;
+  }
 }
 
 int imageprocess(void) {
@@ -1843,10 +1895,23 @@ int imageprocess(void) {
   // printf("stop:%.2f\n",SystemData.SpeedData.Length);
   // printf("stop_BZW:%d\n",SystemData.Stop)
   // debug(ImageStatus.TowPoint_True);
-  printf("圆环进程：%d\n", ImageFlag.image_element_rings_flag);
+  // debug()
+  // debug(ImageStatus.TowPoint_True);
+  // debug(circle_count_flag);
   if (ImageFlag.image_element_rings_flag) {
-    return ImageDeal[35].Center;
-  } else {
-    return ImageDeal[35].Center;
+    debug(ImageFlag.image_element_rings_flag);
   }
+  // if (ImageFlag.image_element_rings_flag == 0) {
+  //   return ImageDeal[ImageStatus.TowPoint_True].Center;
+  // } else if (ImageFlag.image_element_rings_flag > 0 && ImageFlag.image_element_rings_flag <= 2){
+  //   return ImageDeal[ImageStatus.TowPoint + 10].Center + 10;
+  // } else {
+  //   return ImageDeal[ImageStatus.TowPoint_Gain].Center;
+  // }
+  if (ImageFlag.is_flip) {
+    ImageStatus.Det_True = 2 * ImageStatus.MiddleLine - ImageStatus.Det_True;
+  }
+  // debug(ImageStatus.TowPoint_True);
+  // debug(ImageStatus.OFFLine);
+  return ImageStatus.Det_True;
 }

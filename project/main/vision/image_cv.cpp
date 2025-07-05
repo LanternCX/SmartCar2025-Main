@@ -3,6 +3,7 @@
 #include "opencv2/opencv.hpp"
 #include <opencv2/videoio.hpp>
 #include <unistd.h>
+#include "Debug.h"
 
 using namespace cv;
 using namespace std;
@@ -46,11 +47,11 @@ char image_cv_Init(void) {
   return 1;
 }
 
-char image_cv_zip(void) {
-
+char image_cv_zip(cv::Mat src) {
   // 读取摄像头一帧图像
   // cap.read(frame);    // cap >> frame;
-  cap >> frame;
+  // cap >> frame;
+  src.copyTo(frame);
   if (frame.empty()) {
     cerr << "Error read frame" << endl;
     return -1;
@@ -60,6 +61,7 @@ char image_cv_zip(void) {
 
   // 裁切区域从顶部开始，高度为 3/4
   cv::Rect roi(0, 0, width, height * 3 / 4);
+  // debug(width, height);
   frame = frame(roi).clone();
 
   // 转化为灰度
@@ -73,6 +75,9 @@ char image_cv_zip(void) {
   //第一个binary为要压缩的输入图像，第二个binary为压缩后的输出图像，第三个是压缩为80*60的大小
   resize(binary, binary, Size(160, 120));
 
+  if (ImageFlag.is_flip) {
+    flip(binary, binary, 1);
+  }
   // auto start2 = std::chrono::high_resolution_clock::now();
   // cv::threshold(gray, binary1, 0, 1, THRESH_BINARY + THRESH_OTSU);
   // cv::Mat resized2;
@@ -93,4 +98,8 @@ char image_cv_zip(void) {
   // printf("\n\n\n");
 
   return 1;
+}
+
+VideoCapture & getCap() {
+  return cap;
 }

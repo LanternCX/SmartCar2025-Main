@@ -276,6 +276,10 @@ typedef struct {
   //    int16 Ramp;                                  /*0 :无坡道 1：坡道*/ int16
   //    RoadBlock_Flag;                        /*0 :无路障            1 :路障*/
   //    int16 Out_Road;                               /*0 :无断路      1 :断路*/
+  bool is_flip;
+
+  // 状态来源 0 无来源 1 传统方案 2 色块识别
+  int stat_from;
 } ImageFlagtypedef;
 
 typedef struct {
