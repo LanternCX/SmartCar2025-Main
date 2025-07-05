@@ -5,7 +5,6 @@
 #include "Servo.h"
 #include "Control.h"
 #include "Debug.h"
-#include "image.hpp"
 
 /**
  * @file PID.cpp
@@ -35,9 +34,9 @@ void init_dir_pid(pid_param &pid){
     // v 70 - 20 lowpass 0.5 0.1 p 0.4 d 0.4 line -20
     // v 80 - 30 lowpass 0.5 0.1 p 0.4 d 0.6 line -70
     // v 100, 70 lowpass 0.6 0.1 p 0.3 d 0.95 line -50 no det
-    pid.kp = 0.70;
+    pid.kp = 1.10;
     pid.ki = 0.00;
-    pid.kd = 0.05;
+    pid.kd = 0.20;
 
     pid.low_pass = 0.8;
 
@@ -93,8 +92,11 @@ void control_init(int line_speed, int curve_speed){
 void to_center(int now, int target){
     static int error = 0;
     static int servo_duty_det = 0;
-    error = target - now;
-    servo_duty_det = pid_slove(&dir_pid, error);
+    if(now != -1){
+        error = target - now;
+        error = low_pass_filter(&dir_low_pass, error);
+        servo_duty_det = pid_slove(&dir_pid, error);
+    }
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
     
     // 计算差速比 10% pre 5 degree 
@@ -102,10 +104,6 @@ void to_center(int now, int target){
     det = 0;
     set_left_speed(speed.current + det);
     set_right_speed(speed.current - det);
-
-    // if (ImageStatus.OFFLine > ImageStatus.TowPoint) {
-
-    // }
 
     if(SERVO_DEBUG){
         // std::cerr << "servo-target: " << target << ' ';
@@ -123,6 +121,20 @@ void to_center(int now, int target){
  * @author Cao Xin
  * @date 2025-04-06
  */
-void set_statue(){
+// void set_statue(ElementType type){
     
-}
+//     if(type == LINE){
+//         dir_low_pass.alpha = 0.6;
+//         speed.current = speed.line_speed;
+//         if(SERVO_DEBUG){
+//             std::cerr << "servo-target: " << "LINE" << '\n';
+//         }
+//     }
+//     if(type == L_CURVE || type == R_CURVE){
+//         dir_low_pass.alpha = 0.6;
+//         speed.current = speed.curve_speed;
+//         if(SERVO_DEBUG){
+//             std::cerr << "servo-target: " << "CURVE" << '\n';
+//         }
+//     }
+// }
