@@ -68,8 +68,8 @@ void init_dir_pid(pid_param &pid){
  */
 void init_fuzzy_pid() {
     pids.push_back(control_param(1.10, 0.20, 0.5));
-    pids.push_back(control_param(1.15, 0.20, 0.5));
-    pids.push_back(control_param(1.20, 0.20, 0.5));
+    pids.push_back(control_param(1.10, 0.20, 0.5));
+    pids.push_back(control_param(1.10, 0.20, 0.5));
 }
 
 /**

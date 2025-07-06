@@ -16,6 +16,7 @@
 #include "image_cv.hpp"
 #include "Color.hpp"
 #include "Main.hpp"
+#include "zf_driver_gpio.h"
 
 /**
  * @file Main.cpp
@@ -95,6 +96,18 @@ int run() {
     // Init image process
     Data_Settings();
 
+    while ((int)gpio_get_level(KEY_0) == 1){
+        cap >> frame;
+
+        // gray frame process
+        image_cv_zip(frame);
+        imageprocess();
+
+        // rgb frame process
+        resize(frame, frame, cv::Size(80, 60));
+        ring_judge(frame);
+    }
+    
     // control thread
     control = std::thread(timer_thread);
 
@@ -133,6 +146,13 @@ int run() {
         // cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
         // draw_rgb_img(color_image);
         // debug(center);   
+    }
+    return 0;
+}
+
+int test() {
+    while (true) {
+        debug((int) gpio_get_level(KEY_0));
     }
     return 0;
 }
