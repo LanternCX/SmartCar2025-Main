@@ -123,6 +123,9 @@ int run() {
         resize(frame, frame, cv::Size(80, 60));
         ring_judge(frame);
 
+        if (ImageFlag.Zebra_Flag) {
+            exit(0);
+        }
         // cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
 
         // for (int i = 0; i < 60; ++i) {
