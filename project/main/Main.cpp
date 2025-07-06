@@ -8,7 +8,7 @@
 
 #include "Display.h"
 #include "Motor.h"
-#include "Control.h"
+#include "Control.hpp"
 #include "Servo.h"
 #include "Time.h"
 #include "Debug.h"
