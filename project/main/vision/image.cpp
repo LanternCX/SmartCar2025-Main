@@ -1838,8 +1838,8 @@ void Element_Test() {
   if (ImageStatus.Road_type !=
       Ramp) /*&& circle_num < 2 */ //圆环检测//&& ImageStatus.Road_type != Ramp
   {
-    Element_Judgment_Left_Rings();  //左圆环检测
-    Element_Judgment_Right_Rings(); //右圆环检测
+    // Element_Judgment_Left_Rings();  //左圆环检测
+    // Element_Judgment_Right_Rings(); //右圆环检测
   }
 }
 
@@ -1899,7 +1899,6 @@ int imageprocess(void) {
   // debug(ImageStatus.TowPoint_True);
   // debug(circle_count_flag);
   if (ImageFlag.image_element_rings_flag) {
-    debug(ImageFlag.image_element_rings_flag);
   }
   // if (ImageFlag.image_element_rings_flag == 0) {
   //   return ImageDeal[ImageStatus.TowPoint_True].Center;
