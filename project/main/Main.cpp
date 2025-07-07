@@ -118,7 +118,7 @@ int run() {
 
         // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
-        ring_judge(frame);
+        // ring_judge(frame);
     }
     
     // control thread

@@ -35,13 +35,7 @@ std::vector<control_param> pids;
  * @author Cao Xin
  * @date 2025-04-06
  */
-void init_dir_pid(pid_param &pid){
-    // v 40 p 0.10 d 0.
-    // lowpass 0.5 p 0.2 d 0.4
-    // v 60 - 10 lowpass 0.5 0.1 p 0.6 d 0.4 line -10
-    // v 70 - 20 lowpass 0.5 0.1 p 0.4 d 0.4 line -20
-    // v 80 - 30 lowpass 0.5 0.1 p 0.4 d 0.6 line -70
-    // v 100, 70 lowpass 0.6 0.1 p 0.3 d 0.95 line -50 no det
+void init_dir_pid(pid_param &pid) {
     pid.kp = 0.00;
     pid.ki = 0.00;
     pid.kd = 0.00;
@@ -67,9 +61,12 @@ void init_dir_pid(pid_param &pid){
  * @brief 模糊 PID 初始化
  */
 void init_fuzzy_pid() {
-    pids.push_back(control_param(1.10, 0.20, 0.5));
+    pids.push_back(control_param(0.60, 3.40, 0.5));
+    pids.push_back(control_param(1.10, 3.40, 0.5));
+    pids.push_back(control_param(1.10, 1.40, 0.5));
+    pids.push_back(control_param(1.10, 1.40, 0.5));
     // pids.push_back(control_param(1.10, 0.20, 0.5));
-    pids.push_back(control_param(1.20, 0.30, 0.5));
+    // pids.push_back(control_param(1.20, 0.30, 0.5));
     // pids.push_back(control_param(1.15, 0.30, 0.5));`
     // pids.push_back(control_param(1.40, 0.40, 0.5));
     // pids.push_back(control_param(1.10, 0.00, 0.5));
@@ -84,7 +81,7 @@ void init_fuzzy_pid() {
  * @author Cao Xin
  * @date 2025-04-06
  */
-void init_dir_lowpass(low_pass_param &lowpass){
+void init_dir_lowpass(low_pass_param &lowpass) {
     lowpass.alpha = 0.5;
 }
 
@@ -96,7 +93,7 @@ void init_dir_lowpass(low_pass_param &lowpass){
  * @author Cao Xin
  * @date 2025-04-06
  */
-void control_init(int line_speed, int curve_speed){
+void control_init(int line_speed, int curve_speed) {
     init_dir_pid(dir_pid);
     init_dir_lowpass(dir_low_pass);
     init_fuzzy_pid();
@@ -124,10 +121,10 @@ void calc_control_param() {
     float alpha = 1.0 * det / max;
     int idx = clip(std::floor(siz * alpha), 0, siz - 1);
     debug(idx);
-    if (ImageFlag.image_element_rings_flag) {
-        idx = 1;
-    }
     set_control_param(pids[idx]);
+    if (ImageFlag.image_element_rings_flag) {
+        set_control_param(control_param(1.05, 1.40, 0.5));
+    }
 }
 
 /**

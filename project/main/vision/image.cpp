@@ -1838,8 +1838,8 @@ void Element_Test() {
   if (ImageStatus.Road_type !=
       Ramp) /*&& circle_num < 2 */ //圆环检测//&& ImageStatus.Road_type != Ramp
   {
-    Element_Judgment_Left_Rings();  //左圆环检测
-    Element_Judgment_Right_Rings(); //右圆环检测
+    // Element_Judgment_Left_Rings();  //左圆环检测
+    // Element_Judgment_Right_Rings(); //右圆环检测
   }
 }
 
