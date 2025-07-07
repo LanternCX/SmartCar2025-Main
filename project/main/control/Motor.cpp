@@ -8,6 +8,8 @@
 #include "LowPass.h"
 #include "Math.h"
 
+#include "Debug.h"
+
  /**
  * @file Motor.cpp
  * @brief 后轮相关操作
@@ -28,8 +30,10 @@ low_pass_param left_low_pass;
 low_pass_param right_low_pass;
 
 // Duty
-static int left_duty = 18;
-static int right_duty = 16;
+const int base_duty = 2300;
+const int det_duty = 220;
+static int left_duty = base_duty;
+static int right_duty = base_duty - det_duty;
 
 /**
  * @brief 初始化 PID 控制器
@@ -79,9 +83,10 @@ void init_motor_low_pass(low_pass_param &lowpass){
  * @date 2025-04-05
  */
 void left_motor_run(int duty, int dir){
-    duty = min(duty, 30);
     gpio_set_level(MOTOR1_DIR, dir);
-    pwm_set_duty(MOTOR1_PWM, duty * (MOTOR1_PWM_DUTY_MAX / 100));
+    int duty_real = duty * (MOTOR1_PWM_DUTY_MAX / 10000);
+    duty_real = min(duty, 3000);
+    pwm_set_duty(MOTOR1_PWM, duty_real);
 }
 
 /**
@@ -93,9 +98,10 @@ void left_motor_run(int duty, int dir){
  * @date 2025-04-05
  */
 void right_motor_run(int duty, int dir){
-    duty = min(duty, 30);
     gpio_set_level(MOTOR2_DIR, dir);
-    pwm_set_duty(MOTOR2_PWM, duty * (MOTOR2_PWM_DUTY_MAX / 100));
+    int duty_real = duty * (MOTOR2_PWM_DUTY_MAX / 10000);
+    duty_real = min(duty, 3000);
+    pwm_set_duty(MOTOR2_PWM, duty_real);
 }
 
 /**
@@ -144,28 +150,16 @@ void set_left_speed(int speed){
     float error = speed - now;
     // PID 计算增量
     float det = increment_pid_solve(&left_pid, error);
-
+    
     // 计算输出值
     // left_duty += det;
-
+    
     // 输出到电机控制
     left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
-
-    // Debug 信息
-    if(MOTOR_DEBUG){
-        static int cnt1 = 0;
-        static int leftOut[100];
-        cnt1++;
-        cnt1 %= 100;
-        
-        // std::cout << "duty-l: " <<  left_duty << " now-l: " << now << " target-l: " << speed << " error-l: " << error << '\n';
-        leftOut[cnt1] = now;
-        for(int i = 0; i < 100; i++){
-            ips200_draw_point((10 + i), (uint16)max(320 - leftOut[i] / 3.0, 1), 0x00FF);
-            ips200_draw_point((10 + i), (uint16)max(320 - speed / 3.0, 1), 0x00FF);
-        }
+    if (MOTOR_DEBUG) {
+        // debug("left", now);
+        // cout << now << '\n';
     }
-
 }
 
 /**
@@ -188,20 +182,14 @@ void set_right_speed(int speed){
     // 计算输出值
     // right_duty += det;
 
+    
     // 输出到电机控制
+    // debug(abs(right_duty));
     right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
-
+    
     // Debug 信息
     if(MOTOR_DEBUG){
-        static int cnt2 = 0;
-        static int rightOut[100];
-        cnt2++;
-        cnt2 %= 100;
-        // std::cout << "duty-r: " <<  right_duty << " now-r: " << now << " target-l: " << speed << " error-r: " << error << '\n';
-        rightOut[cnt2] = now;
-        for(int i = 0; i < 100; i++){
-            ips200_draw_point((10 + i), (uint16)max(220 - rightOut[i] / 3.0, 1), 0xF800);
-            ips200_draw_point((10 + i), (uint16)max(220 - speed / 3.0, 1), 0xF800);
-        }
+        // debug("right", now);
+        // cout << now << '\n';
     }
 }

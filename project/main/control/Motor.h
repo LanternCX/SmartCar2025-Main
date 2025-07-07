@@ -33,7 +33,7 @@
 #define MAX_DUTY (30) 
 
 // 是否打开 Debug 模式
-#define MOTOR_DEBUG 0
+#define MOTOR_DEBUG 1
 
 
 typedef struct {

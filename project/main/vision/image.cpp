@@ -1899,7 +1899,6 @@ int imageprocess(void) {
   // debug(ImageStatus.TowPoint_True);
   // debug(circle_count_flag);
   if (ImageFlag.image_element_rings_flag) {
-    debug(ImageFlag.image_element_rings_flag);
   }
   // if (ImageFlag.image_element_rings_flag == 0) {
   //   return ImageDeal[ImageStatus.TowPoint_True].Center;

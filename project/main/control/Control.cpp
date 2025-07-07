@@ -42,9 +42,9 @@ void init_dir_pid(pid_param &pid){
     // v 70 - 20 lowpass 0.5 0.1 p 0.4 d 0.4 line -20
     // v 80 - 30 lowpass 0.5 0.1 p 0.4 d 0.6 line -70
     // v 100, 70 lowpass 0.6 0.1 p 0.3 d 0.95 line -50 no det
-    pid.kp = 1.10;
+    pid.kp = 0.00;
     pid.ki = 0.00;
-    pid.kd = 0.20;
+    pid.kd = 0.00;
 
     pid.low_pass = 0.8;
 
@@ -68,8 +68,13 @@ void init_dir_pid(pid_param &pid){
  */
 void init_fuzzy_pid() {
     pids.push_back(control_param(1.10, 0.20, 0.5));
-    pids.push_back(control_param(1.10, 0.20, 0.5));
-    pids.push_back(control_param(1.10, 0.20, 0.5));
+    // pids.push_back(control_param(1.10, 0.20, 0.5));
+    pids.push_back(control_param(1.20, 0.30, 0.5));
+    // pids.push_back(control_param(1.15, 0.30, 0.5));`
+    // pids.push_back(control_param(1.40, 0.40, 0.5));
+    // pids.push_back(control_param(1.10, 0.00, 0.5));
+    // pids.push_back(control_param(1.10, 0.00, 0.5));
+    // pids.push_back(control_param(1.30, 0.00, 0.5));
 }
 
 /**
@@ -113,11 +118,15 @@ void set_control_param(control_param param) {
  */
 void calc_control_param() {
     // 3 * a, a = (max - det) / max, max = 60 - ImageStatus.TowPoint
-    int det = ImageStatus.OFFLine - ImageStatus.TowPoint;
+    int det = ImageStatus.OFFLine;
     int siz = pids.size();
-    int max = 60 - ImageStatus.TowPoint;
-    float alpha = 1.0 * (max - det) / max;
+    int max = 60;
+    float alpha = 1.0 * det / max;
     int idx = clip(std::floor(siz * alpha), 0, siz - 1);
+    debug(idx);
+    if (ImageFlag.image_element_rings_flag) {
+        idx = 1;
+    }
     set_control_param(pids[idx]);
 }
 
