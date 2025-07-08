@@ -7,6 +7,7 @@
 #include "Control.hpp"
 #include "Math.h"
 #include "Motor.h"
+#include "PID.h"
 #include "Servo.h"
 #include "Debug.h"
 
@@ -21,6 +22,8 @@
 
 // 方向环 PID 参数
 pid_param dir_pid;
+// 角度环 PID 参数
+pid_param gyro_pid;
 // 方向环低通参数
 low_pass_param dir_low_pass;
 // 偏航角低通参数
@@ -44,12 +47,12 @@ void init_dir_pid(pid_param &pid) {
 
     pid.low_pass = 0.8;
 
-    pid.p_max = 30.0;
-    pid.i_max = 30.0;
-    pid.d_max = 30.0;
+    pid.p_max = 60.0;
+    pid.i_max = 60.0;
+    pid.d_max = 60.0;
 
-    pid.out_min = -30.0;
-    pid.out_max = 30.0;
+    pid.out_min = -60.0;
+    pid.out_max = 60.0;
 
     pid.out_p = 0.0;
     pid.out_i = 0.0;
@@ -84,7 +87,36 @@ void init_dir_lowpass(low_pass_param &lowpass) {
 }
 
 /**
- * @brief 初始化位置低通滤波器
+ * @brief 初始化 PID 控制器
+ * @param pid PID 控制器参数结构体指针
+ * @return none
+ * @author Cao Xin
+ * @date 2025-04-06
+ */
+void init_gyro_pid(pid_param &pid) {
+    pid.kp = 0.0015;
+    pid.ki = 0.00;
+    pid.kd = 0.00;
+
+    pid.low_pass = 0.8;
+
+    pid.p_max = 60.0;
+    pid.i_max = 60.0;
+    pid.d_max = 60.0;
+
+    pid.out_min = -60.0;
+    pid.out_max = 60.0;
+
+    pid.out_p = 0.0;
+    pid.out_i = 0.0;
+    pid.out_d = 0.0;
+
+    pid.pre_error = 0.0;
+    pid.pre_pre_error = 0.0;
+}
+
+/**
+ * @brief 初始化偏航角低通滤波器
  * @param lowpass 低通滤波器参数结构体指针
  * @return none
  * @author Cao Xin
@@ -106,8 +138,9 @@ void control_init(int line_speed, int curve_speed) {
     init_dir_pid(dir_pid);
     init_dir_lowpass(dir_low_pass);
     init_fuzzy_pid();
-    speed.line_speed = line_speed;
-    speed.curve_speed = curve_speed;
+
+    init_gyro_pid(gyro_pid);
+    init_gyro_lowpass(gyro_low_pass);
 }
 
 /**
@@ -126,7 +159,7 @@ void set_control_param(control_param param) {
  * @author Cao Xin
  * @date 2025-07-06
  */
-void calc_control_param() {
+int calc_control_param() {
     // 3 * a, a = (max - det) / max, max = 60 - ImageStatus.TowPoint
     int det = ImageStatus.OFFLine;
     int siz = pids.size();
@@ -144,6 +177,7 @@ void calc_control_param() {
     if (ImageStatus.Road_type == Straight) {
         set_control_param(control_param(0.80, 0.80));
     }
+    return idx;
 }
 
 /**
@@ -156,7 +190,7 @@ void calc_control_param() {
  */
 void to_center(int now, int target) {
     // 计算模糊 pid
-    calc_control_param();
+    int gear = calc_control_param();
 
     // 误差
     static int error = 0;
@@ -165,12 +199,20 @@ void to_center(int now, int target) {
     
     error = target - now;
     error = low_pass_filter(&dir_low_pass, error);
+
+    int gyro_y = imu_get_raw(imu_file_path[GYRO_Y_RAW]);
+    gyro_y = low_pass_filter(&gyro_low_pass, gyro_y);
+
+    // 舵机 向左+ 向右-
     servo_duty_det = pid_slove(&dir_pid, error);
+    // 角加速度 向左- 向右+
+    int gyro_y_det = pid_slove(&gyro_pid, gyro_y);
+    debug(gyro_y_det);
+
+    servo_duty_det += gear == 0 ? gyro_y_det : 0;
+    
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
     
-    // 计算差速比 10% pre 5 degree 
-    int det = speed.current * (servo_duty_det / 5.0 * 0.1);
-    det = 0;
-    set_left_speed(speed.current + det);
-    set_right_speed(speed.current - det);
+    set_left_speed(speed.current);
+    set_right_speed(speed.current);
 }

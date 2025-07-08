@@ -94,6 +94,9 @@ void init() {
     // Init Controller
     control_init(65, 65);
 
+    // Init IMU
+    imu_get_dev_info();
+
     // Init image opencv
     image_cv_Init();
     
@@ -154,7 +157,11 @@ int test() {
     init();
     while (true) {
         // set_left_speed(64);
-        set_right_speed(64);
+        for (int i = 0; i < 35; i++) {
+            set_servo_duty(89 + i);
+            debug(i);
+            system_delay_ms(50);
+        }
     }
     return 0;
 }
