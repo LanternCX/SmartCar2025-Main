@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 #include <string>
@@ -137,6 +138,9 @@ int run() {
         ring_judge(frame);
 
         if (ImageFlag.Zebra_Flag) {
+            exit(0);
+        }
+        if ((int)gpio_get_level(KEY_1) == 0) {
             exit(0);
         }
     }

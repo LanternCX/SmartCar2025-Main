@@ -136,6 +136,8 @@ void ring_judge(cv::Mat frame) {
         gpio_set_level(BEEP, 0x0);
     }
     vector<Rect> red = detect_red(frame, frame);
+
+    ImageFlag.is_red = red.size() != 0;
     // resize(frame, frame, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
     // draw_rgb_img(frame);
     // debug(red.size());
@@ -160,7 +162,7 @@ void ring_judge(cv::Mat frame) {
         return;
     }
     // 状态来源不是红箱直接出环
-    if (ImageFlag.image_element_rings_flag == 10 && ImageFlag.stat_from == 1) {
+    if (ImageFlag.image_element_rings_flag == 10 && red.empty() && ImageFlag.stat_from == 1) {
         ImageFlag.image_element_rings_flag = 0;
         ImageFlag.image_element_rings = 0;
         ImageFlag.ring_big_small = 0;

@@ -23,6 +23,8 @@
 pid_param dir_pid;
 // 方向环低通参数
 low_pass_param dir_low_pass;
+// 偏航角低通参数
+low_pass_param gyro_low_pass;
 // 当前速度参数
 speed_param speed;
 
@@ -59,19 +61,15 @@ void init_dir_pid(pid_param &pid) {
 
 /**
  * @brief 模糊 PID 初始化
+ * @return none
+ * @author Cao Xin
+ * @date 2025-07-06
  */
 void init_fuzzy_pid() {
-    pids.push_back(control_param(0.60, 3.40, 0.5));
-    pids.push_back(control_param(1.10, 3.40, 0.5));
-    pids.push_back(control_param(1.10, 1.40, 0.5));
-    pids.push_back(control_param(1.10, 1.40, 0.5));
-    // pids.push_back(control_param(1.10, 0.20, 0.5));
-    // pids.push_back(control_param(1.20, 0.30, 0.5));
-    // pids.push_back(control_param(1.15, 0.30, 0.5));`
-    // pids.push_back(control_param(1.40, 0.40, 0.5));
-    // pids.push_back(control_param(1.10, 0.00, 0.5));
-    // pids.push_back(control_param(1.10, 0.00, 0.5));
-    // pids.push_back(control_param(1.30, 0.00, 0.5));
+    pids.push_back(control_param(0.80, 3.50));
+    pids.push_back(control_param(1.20, 3.00));
+    pids.push_back(control_param(1.20, 2.00));
+    pids.push_back(control_param(1.20, 2.00));
 }
 
 /**
@@ -82,6 +80,17 @@ void init_fuzzy_pid() {
  * @date 2025-04-06
  */
 void init_dir_lowpass(low_pass_param &lowpass) {
+    lowpass.alpha = 0.5;
+}
+
+/**
+ * @brief 初始化位置低通滤波器
+ * @param lowpass 低通滤波器参数结构体指针
+ * @return none
+ * @author Cao Xin
+ * @date 2025-07-08
+ */
+void init_gyro_lowpass(low_pass_param &lowpass) {
     lowpass.alpha = 0.5;
 }
 
@@ -103,15 +112,19 @@ void control_init(int line_speed, int curve_speed) {
 
 /**
  * @brief 设置当前的 PID 参数
+ * @param param 舵机 PD 参数
+ * @author Cao Xin
+ * @date 2025-07-06
  */
 void set_control_param(control_param param) {
     dir_pid.kp = param.kp;
     dir_pid.kd = param.kd;
-    dir_low_pass.alpha = param.low_pass;
 }
 
 /**
  * @brief 计算并设置当前元素的 PID 参数
+ * @author Cao Xin
+ * @date 2025-07-06
  */
 void calc_control_param() {
     // 3 * a, a = (max - det) / max, max = 60 - ImageStatus.TowPoint
@@ -120,10 +133,16 @@ void calc_control_param() {
     int max = 60;
     float alpha = 1.0 * det / max;
     int idx = clip(std::floor(siz * alpha), 0, siz - 1);
-    debug(idx);
     set_control_param(pids[idx]);
+
+    // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
-        set_control_param(control_param(1.05, 1.40, 0.5));
+        set_control_param(control_param(1.20, 1.50));
+    }
+
+    // 直道 PD
+    if (ImageStatus.Road_type == Straight) {
+        set_control_param(control_param(0.80, 0.80));
     }
 }
 

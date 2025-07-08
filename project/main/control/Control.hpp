@@ -24,10 +24,9 @@ typedef struct{
 struct control_param {
     float kp;
     float kd;
-    float low_pass;
 
-    control_param(float _kp, float _kd, float _low_pass)
-        : kp(_kp), kd(_kd), low_pass(_low_pass) {}
+    control_param(float _kp, float _kd)
+        : kp(_kp), kd(_kd){}
 };
 
 

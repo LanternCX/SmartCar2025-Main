@@ -1267,10 +1267,11 @@ void Element_Handle_Left_Rings() {
   if (ImageFlag.image_element_rings_flag == 8) {
     if (
         // Straight_Judge(2, ImageStatus.OFFLine+15, 50) < 1
-        ImageStatus.Right_Line < 10 && ImageStatus.OFFLine < 10
-
-        ) //右边为直线且截止行（前瞻值）很小
-    {
+        ImageStatus.Right_Line < 10 && 
+        ImageStatus.OFFLine < 10 && 
+        ImageFlag.is_red
+      ) {
+      //右边为直线且截止行（前瞻值）很小
       ImageFlag.image_element_rings_flag = 9;
       // wireless_uart_send_byte(9);
     }
