@@ -49,3 +49,4 @@ typedef struct {
 void motor_init();
 void set_left_speed(int speed);
 void set_right_speed(int speed);
+int sync_motor_duty();

@@ -17,6 +17,7 @@
 #include "image_cv.hpp"
 #include "Color.hpp"
 #include "Main.hpp"
+#include "zf_device_ips200_fb.h"
 #include "zf_driver_gpio.h"
 
 /**
@@ -138,7 +139,7 @@ int run() {
 
         // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
-        ring_judge(frame);
+        // ring_judge(frame);
 
         if (ImageFlag.Zebra_Flag) {
             exit(0);
@@ -155,14 +156,7 @@ int run() {
  */
 int test() {
     init();
-    while (true) {
-        // set_left_speed(64);
-        for (int i = 0; i < 35; i++) {
-            set_servo_duty(89 + i);
-            debug(i);
-            system_delay_ms(50);
-        }
-    }
+    sync_motor_duty();
     return 0;
 }
 
@@ -171,5 +165,5 @@ int test() {
  */
 int main() {
     std::cout << "version: idol" << std::endl;
-    return run();
+    return test();
 }
