@@ -47,7 +47,7 @@ char image_cv_Init(void) {
   return 1;
 }
 
-char image_cv_zip(cv::Mat src) {
+char image_cv_zip(cv::Mat &src) {
   // 读取摄像头一帧图像
   // cap.read(frame);    // cap >> frame;
   // cap >> frame;
@@ -60,7 +60,7 @@ char image_cv_zip(cv::Mat src) {
   int width = frame.cols;
 
   // 裁切区域从顶部开始，高度为 3/4
-  cv::Rect roi(0, 0, width, height);
+  cv::Rect roi(0, height * 1 / 3, width, height - height * 1 / 3);
   // debug(width, height);
   frame = frame(roi).clone();
 
@@ -87,7 +87,7 @@ char image_cv_zip(cv::Mat src) {
   // - start2).count(); std::cout << "先二值化再压缩耗时: " << duration2 << "
   // 毫秒" << std::endl;
 
-  for (int i = 60, p = 0; i < 120; i++, p++) {
+  for (int i = 0, p = 0; i < 120; i += 2, p++) {
     for (int j = 0, k = 0; j < 160; j += 2, k++) {
       img1[p][k] = binary.at<unsigned char>(i, j);
       img3[p][k] = binary.at<unsigned char>(i, j);

@@ -42,20 +42,31 @@ std::vector<std::vector<int>> pid_map;
  * @date 2025-07-06
  */
 void init_fuzzy_pid() {
-    pids.push_back(control_param(1.20, 2.0, 0.0015));
-    pids.push_back(control_param(1.50, 3.0, 0.000));
-    pids.push_back(control_param(1.60, 4.0, 0.000));
-    pids.push_back(control_param(1.70, 5.0, 0.000));
+    pids.push_back(control_param(1.20, 3.20, 0.005));
+    pids.push_back(control_param(1.50, 3.20, 0.000));
+    pids.push_back(control_param(1.50, 3.20, 0.000));
+    pids.push_back(control_param(1.50, 3.20, 0.000));
+    // pids.push_back(control_param(1.50, 3.0, 0.000));
+    // pids.push_back(control_param(1.60, 3.0, 0.000));
+    // pids.push_back(control_param(1.70, 2.0, 0.000));
+    // pids.push_back(control_param(1.80, 2.0, 0.000));
+    // pids.push_back(control_param(1.90, 1.0, 0.000));
     // pids.push_back(control_param(1.30, 1.0, 0.000));
     // pids.push_back(control_param(1.40, 1.0, 0.000));
     // pids.push_back(control_param(1.50, 1.0, 0.000));
 
     pid_map = {
-        { 0, 1, 2, 3, },
-        { 0, 1, 2, 3, },
-        { 0, 1, 2, 3, },
-        { 0, 1, 2, 3, },
+        { 0, 0, 0, 0, },
+        { 1, 1, 1, 1, },
+        { 2, 2, 2, 2, },
+        { 3, 3, 3, 3, },
     };
+    // pid_map = {
+    //     { 0, 0, 0, 0, },
+    //     { 1, 1, 1, 1, },
+    //     { 2, 2, 2, 2, },
+    //     { 3, 3, 3, 3, },
+    // };
 }
 
 /**
@@ -178,16 +189,15 @@ int calc_control_param(int error) {
     int siz = pid_map.size();
 
     int det_y = ImageStatus.OFFLine;
-    int max_y = ImageStatus.TowPoint;
+    int max_y = 60;
     float alpha_y = 1.0 * det_y / max_y;
     int idx_y = clip(std::floor(siz * alpha_y), 0, siz - 1);
 
     int det_x = abs(error);
-    int max_x = 40;
+    int max_x = 15;
     float alpha_x = 1.0 * det_x / max_x;
     int idx_x = clip(std::floor(siz * alpha_x), 0, siz - 1);
-
-    int idx = pid_map[idx_x][idx_y];
+    int idx = pid_map[idx_y][idx_x];
     debug(idx_x, idx_y, idx);
 
     idx = clip(idx, 0, pids.size() - 1);
@@ -202,7 +212,7 @@ int calc_control_param(int error) {
     if (ImageStatus.Road_type == Straight) {
         // set_control_param(control_param(0.80, 0.80, 0.0015));
     }
-    return idx_y;
+    return idx;
 }
 
 /**
@@ -235,8 +245,8 @@ void to_center(int now, int target) {
     servo_duty_det = pid_slove(&dir_pid, error);
     // 角加速度 向左- 向右+
     int gyro_y_det = pid_slove(&gyro_pid, gyro_y);
-
     servo_duty_det += gyro_y_det;
+    debug(gyro_y_det);
     
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
     
