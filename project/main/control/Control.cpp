@@ -31,7 +31,7 @@ low_pass_param gyro_low_pass;
 // 当前速度参数
 speed_param speed;
 
-std::vector<control_param> pids;
+std::vector<control_param> pid_left;
 
 std::vector<std::vector<int>> pid_map;
 
@@ -42,10 +42,10 @@ std::vector<std::vector<int>> pid_map;
  * @date 2025-07-06
  */
 void init_fuzzy_pid() {
-    pids.push_back(control_param(1.20, 3.20, 0.005));
-    pids.push_back(control_param(1.50, 3.20, 0.000));
-    pids.push_back(control_param(1.50, 3.20, 0.000));
-    pids.push_back(control_param(1.50, 3.20, 0.000));
+    pid_left.push_back(control_param(1.20, 3.20, 0.006));
+    pid_left.push_back(control_param(1.65, 3.20, 0.000));
+    pid_left.push_back(control_param(1.85, 3.20, 0.000));
+    pid_left.push_back(control_param(2.05, 3.20, 0.000));
     // pids.push_back(control_param(1.50, 3.0, 0.000));
     // pids.push_back(control_param(1.60, 3.0, 0.000));
     // pids.push_back(control_param(1.70, 2.0, 0.000));
@@ -200,12 +200,12 @@ int calc_control_param(int error) {
     int idx = pid_map[idx_y][idx_x];
     debug(idx_x, idx_y, idx);
 
-    idx = clip(idx, 0, pids.size() - 1);
-    set_control_param(pids[idx]);
+    idx = clip(idx, 0, pid_left.size() - 1);
+    set_control_param(pid_left[idx]);
 
     // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
-        // set_control_param(control_param(1.20, 1.50, 0.0000));
+        set_control_param(control_param(1.50, 3.20, 0.000));
     }
 
     // 直道 PD

@@ -143,10 +143,10 @@ int run() {
         // ring_judge(frame);
 
         if (ImageFlag.Zebra_Flag) {
-            // exit(0);
+            exit(0);
         }
         if ((int)gpio_get_level(KEY_1) == 0) {
-            // exit(0);
+            exit(0);
         }
 
         // cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道

@@ -31,7 +31,7 @@ low_pass_param left_low_pass;
 low_pass_param right_low_pass;
 
 // Duty
-const int base_duty = 2500;
+const int base_duty = 2700;
 // const int base_duty = 0;
 const int det_duty = 0;
 static int left_duty = base_duty + det_duty;
