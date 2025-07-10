@@ -60,7 +60,7 @@ char image_cv_zip(cv::Mat src) {
   int width = frame.cols;
 
   // 裁切区域从顶部开始，高度为 3/4
-  cv::Rect roi(0, 0, width, height * 3 / 4);
+  cv::Rect roi(0, 0, width, height);
   // debug(width, height);
   frame = frame(roi).clone();
 

@@ -47,7 +47,7 @@ void cleanup() {
     }
 
     // Power off the Motor
-    pwm_set_duty(MOTOR1_PWM, 0);   
+    pwm_set_duty(MOTOR1_PWM, 0);
     pwm_set_duty(MOTOR2_PWM, 0);
     pwm_set_duty(SERVO_MOTOR1_PWM, 0);
 }
@@ -70,6 +70,7 @@ void timer_thread() {
     while (running.load()) {
         to_center(ImageStatus.Det_True, ImageStatus.MiddleLine);
         std::this_thread::sleep_for(timer_interval);
+        // debug(ImageFlag.image_element_rings_flag);
     }
 }
 
@@ -142,10 +143,10 @@ int run() {
         // ring_judge(frame);
 
         if (ImageFlag.Zebra_Flag) {
-            exit(0);
+            // exit(0);
         }
         if ((int)gpio_get_level(KEY_1) == 0) {
-            exit(0);
+            // exit(0);
         }
     }
     return 0;
@@ -154,10 +155,16 @@ int run() {
 /**
  * @brief 测试
  */
-int test() {
+int motor_sync() {
     init();
-    sync_motor_duty();
+    sync_motor_duty(1900);
     return 0;
+}
+
+int motor_test() {
+    init();
+    int duty = 1700;
+    left_motor_run(duty, 1700);
 }
 
 /**
@@ -165,5 +172,5 @@ int test() {
  */
 int main() {
     std::cout << "version: idol" << std::endl;
-    return test();
+    return run();
 }

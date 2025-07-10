@@ -33,6 +33,31 @@ speed_param speed;
 
 std::vector<control_param> pids;
 
+std::vector<std::vector<int>> pid_map;
+
+/**
+ * @brief 模糊 PID 初始化
+ * @return none
+ * @author Cao Xin
+ * @date 2025-07-06
+ */
+void init_fuzzy_pid() {
+    pids.push_back(control_param(1.20, 2.0, 0.0015));
+    pids.push_back(control_param(1.50, 3.0, 0.000));
+    pids.push_back(control_param(1.60, 4.0, 0.000));
+    pids.push_back(control_param(1.70, 5.0, 0.000));
+    // pids.push_back(control_param(1.30, 1.0, 0.000));
+    // pids.push_back(control_param(1.40, 1.0, 0.000));
+    // pids.push_back(control_param(1.50, 1.0, 0.000));
+
+    pid_map = {
+        { 0, 1, 2, 3, },
+        { 0, 1, 2, 3, },
+        { 0, 1, 2, 3, },
+        { 0, 1, 2, 3, },
+    };
+}
+
 /**
  * @brief 初始化 PID 控制器
  * @param pid PID 控制器参数结构体指针
@@ -60,19 +85,6 @@ void init_dir_pid(pid_param &pid) {
 
     pid.pre_error = 0.0;
     pid.pre_pre_error = 0.0;
-}
-
-/**
- * @brief 模糊 PID 初始化
- * @return none
- * @author Cao Xin
- * @date 2025-07-06
- */
-void init_fuzzy_pid() {
-    pids.push_back(control_param(0.80, 3.50));
-    pids.push_back(control_param(1.20, 3.00));
-    pids.push_back(control_param(1.20, 2.00));
-    pids.push_back(control_param(1.20, 2.00));
 }
 
 /**
@@ -123,7 +135,7 @@ void init_gyro_pid(pid_param &pid) {
  * @date 2025-07-08
  */
 void init_gyro_lowpass(low_pass_param &lowpass) {
-    lowpass.alpha = 0.5;
+    lowpass.alpha = 0.3;
 }
 
 /**
@@ -152,6 +164,8 @@ void control_init(int line_speed, int curve_speed) {
 void set_control_param(control_param param) {
     dir_pid.kp = param.kp;
     dir_pid.kd = param.kd;
+
+    gyro_pid.kp = param.gyro_p;
 }
 
 /**
@@ -159,25 +173,36 @@ void set_control_param(control_param param) {
  * @author Cao Xin
  * @date 2025-07-06
  */
-int calc_control_param() {
+int calc_control_param(int error) {
     // 3 * a, a = (max - det) / max, max = 60 - ImageStatus.TowPoint
-    int det = ImageStatus.OFFLine;
-    int siz = pids.size();
-    int max = 60;
-    float alpha = 1.0 * det / max;
-    int idx = clip(std::floor(siz * alpha), 0, siz - 1);
+    int siz = pid_map.size();
+
+    int det_y = ImageStatus.OFFLine;
+    int max_y = ImageStatus.TowPoint;
+    float alpha_y = 1.0 * det_y / max_y;
+    int idx_y = clip(std::floor(siz * alpha_y), 0, siz - 1);
+
+    int det_x = abs(error);
+    int max_x = 40;
+    float alpha_x = 1.0 * det_x / max_x;
+    int idx_x = clip(std::floor(siz * alpha_x), 0, siz - 1);
+
+    int idx = pid_map[idx_x][idx_y];
+    debug(idx_x, idx_y, idx);
+
+    idx = clip(idx, 0, pids.size() - 1);
     set_control_param(pids[idx]);
 
     // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
-        set_control_param(control_param(1.20, 1.50));
+        // set_control_param(control_param(1.20, 1.50, 0.0000));
     }
 
     // 直道 PD
     if (ImageStatus.Road_type == Straight) {
-        set_control_param(control_param(0.80, 0.80));
+        // set_control_param(control_param(0.80, 0.80, 0.0015));
     }
-    return idx;
+    return idx_y;
 }
 
 /**
@@ -189,27 +214,29 @@ int calc_control_param() {
  * @date 2025-04-06
  */
 void to_center(int now, int target) {
-    // 计算模糊 pid
-    int gear = calc_control_param();
-
     // 误差
     static int error = 0;
     // 舵机占空比相较目标点的位置值
     static int servo_duty_det = 0;
     
-    error = target - now;
-    error = low_pass_filter(&dir_low_pass, error);
+    if (now != 0) {
+        error = target - now;
+        error = low_pass_filter(&dir_low_pass, error);
+    }
+    
+    // 计算模糊 pid
+    calc_control_param(error);
 
     int gyro_y = imu_get_raw(imu_file_path[GYRO_Y_RAW]);
     gyro_y = low_pass_filter(&gyro_low_pass, gyro_y);
 
     // 舵机 向左+ 向右-
+    // servo_duty_det = bangbang_pid_solve(&dir_pid, error, 20, 30);
     servo_duty_det = pid_slove(&dir_pid, error);
     // 角加速度 向左- 向右+
     int gyro_y_det = pid_slove(&gyro_pid, gyro_y);
-    debug(gyro_y_det);
 
-    servo_duty_det += gear == 0 ? gyro_y_det : 0;
+    servo_duty_det += gyro_y_det;
     
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
     

@@ -31,10 +31,10 @@ low_pass_param left_low_pass;
 low_pass_param right_low_pass;
 
 // Duty
-const int base_duty = 2800;
-const int det_duty = 220;
-static int left_duty = base_duty;
-static int right_duty = base_duty - det_duty;
+const int base_duty = 2000;
+const int det_duty = 0;
+static int left_duty = base_duty + det_duty;
+static int right_duty = base_duty;
 
 /**
  * @brief 初始化 PID 控制器
@@ -189,17 +189,21 @@ void set_right_speed(int speed){
         // cout << now << '\n';
     }
 }
-
-int sync_motor_duty() {
+/**
+ * @brief 校准左右轮转速
+ * @author Cao Xin
+ * @date 2025-07-09
+ */
+int sync_motor_duty(int duty) {
     std::cout << "\n\nsync motor duty" << '\n';
     // 固定左轮转速对右轮转速进行尝试直到两边转速的平均值差不多
     // 实际上是固定左轮占空比对右轮占空比进行二分
-    int num = 200;
-    int base_duty = 2800;
+    int num = 100;
+    int base_duty = duty;
 
     auto check  = [&](int mid) {
-        int eps = 5;
-        int sum_l = 0, sum_r = 0;
+        float eps = 0.1;
+        float sum_l = 0, sum_r = 0;
         int duty_r = base_duty;
         int duty_l = base_duty + mid;
         right_motor_run(duty_r, 1);
@@ -213,21 +217,19 @@ int sync_motor_duty() {
             float now_r = encoder_get_count(ENCODER_1);
             now_r = low_pass_filter(&right_low_pass, now_r);
             sum_r += now_r;
-            system_delay_ms(10);
-
             float now_l = -encoder_get_count(ENCODER_2);
             now_l = low_pass_filter(&left_low_pass, now_l);
             sum_l += now_l;
-            system_delay_ms(10);
+            system_delay_ms(50);
         }
 
-        sum_l /= 10;
-        sum_r /= 10;
+        sum_l /= num;
+        sum_r /= num;
 
-        int diff = sum_l - sum_r;
+        float diff = sum_l - sum_r;
 
         std::cout << "now diff: " << diff << '\n';
-        if (abs(diff) < 5) return 0;
+        if (abs(diff) < eps) return 0;
         else if (diff < 0) return -1;
         else return 1;
     };
@@ -254,8 +256,8 @@ int sync_motor_duty() {
 
     std::cout << "result: " << result << '\n';
     while (true) {
-        right_motor_run(base_duty, 1);
-        left_motor_run(base_duty + result, 0);
+        // right_motor_run(base_duty, 1);
+        // left_motor_run(base_duty - result, 0);
         float now_r = encoder_get_count(ENCODER_1);
         now_r = low_pass_filter(&right_low_pass, now_r);
         float now_l = -encoder_get_count(ENCODER_2);

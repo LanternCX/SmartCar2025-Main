@@ -910,88 +910,92 @@ static void RouteFilter(void) {
   }
 }
 
-// void GetDet() {
-//   float DetTemp = 0;
-//   int TowPoint = 0;
-//   float UnitAll = 0;
-
-//   // Speed_Control_Factor();
-
-//   /*固定圆环前瞻*/
-//   if (ImageStatus.image_element_rings_flag != 0)
-//     TowPoint = Circle[circle_count_flag];
-//   //   else if(ImageStatus.Road_type ==Cross_ture)
-//   //   {
-//   //     TowPoint=29;
-//   //   }
-//   else
-//     TowPoint = ImageStatus.TowPoint; //初始前瞻
-//   if (TowPoint < ImageStatus.OFFLine)
-//     TowPoint = ImageStatus.OFFLine + 1; //前瞻限幅
-//   if (TowPoint >= 49)
-//     TowPoint = 49;
-
-//   if ((TowPoint - 5) >=
-//       ImageStatus.OFFLine) //前瞻取设定前瞻还是可视距离  需要分情况讨论
-//                            //正常前瞻（与截止行相差5行）
-//   {
-//     for (int Ysite = (TowPoint - 5); Ysite < TowPoint; Ysite++) {
-//       DetTemp =
-//           DetTemp + Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll = UnitAll + Weighting[TowPoint - Ysite - 1];
-//     }
-//     for (Ysite = (TowPoint + 5); Ysite > TowPoint; Ysite--) {
-//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll += Weighting[-TowPoint + Ysite - 1];
-//     }
-//     DetTemp = (ImageDeal[TowPoint].Center + DetTemp) / (UnitAll + 1);
-
-//   } else if (TowPoint > ImageStatus.OFFLine) //正常前瞻与截止行不相差5行
-//   {
-//     for (Ysite = ImageStatus.OFFLine; Ysite < TowPoint; Ysite++) {
-//       DetTemp += Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll += Weighting[TowPoint - Ysite - 1];
-//     }
-//     for (Ysite = (TowPoint + TowPoint - ImageStatus.OFFLine); Ysite > TowPoint;
-//          Ysite--) {
-//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll += Weighting[-TowPoint + Ysite - 1];
-//     }
-//     DetTemp = (ImageDeal[Ysite].Center + DetTemp) / (UnitAll + 1);
-//   } else if (ImageStatus.OFFLine < 49) //前瞻等于截至行
-//   {
-//     for (Ysite = (ImageStatus.OFFLine + 3); Ysite > ImageStatus.OFFLine;
-//          Ysite--) {
-//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll += Weighting[-TowPoint + Ysite - 1];
-//     }
-//     DetTemp = (ImageDeal[ImageStatus.OFFLine].Center + DetTemp) / (UnitAll + 1);
-
-//   } else {
-//     DetTemp = ImageStatus.Det_True;
-//   }
-
-//   ImageStatus.Det_True = DetTemp;
-
-//   ImageStatus.TowPoint_True = TowPoint;
-// }
-
-
 void GetDet() {
   float DetTemp = 0;
   int TowPoint = 0;
+  float UnitAll = 0;
 
-  if (ImageFlag.image_element_rings_flag) {
-    TowPoint = Circle[ImageFlag.image_element_rings];
+  // Speed_Control_Factor();
+
+  /*固定圆环前瞻*/
+  if (ImageStatus.image_element_rings_flag != 0)
+    TowPoint = Circle[circle_count_flag];
+  //   else if(ImageStatus.Road_type ==Cross_ture)
+  //   {
+  //     TowPoint=29;
+  //   }
+  else
+    TowPoint = ImageStatus.TowPoint; //初始前瞻
+  if (TowPoint < ImageStatus.OFFLine)
+    TowPoint = ImageStatus.OFFLine + 1; //前瞻限幅
+  if (TowPoint >= 49)
+    TowPoint = 49;
+
+  if ((TowPoint - 5) >=
+      ImageStatus.OFFLine) //前瞻取设定前瞻还是可视距离  需要分情况讨论
+                           //正常前瞻（与截止行相差5行）
+  {
+    for (int Ysite = (TowPoint - 5); Ysite < TowPoint; Ysite++) {
+      DetTemp =
+          DetTemp + Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll = UnitAll + Weighting[TowPoint - Ysite - 1];
+    }
+    for (Ysite = (TowPoint + 5); Ysite > TowPoint; Ysite--) {
+      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll += Weighting[-TowPoint + Ysite - 1];
+    }
+    DetTemp = (ImageDeal[TowPoint].Center + DetTemp) / (UnitAll + 1);
+
+  } else if (TowPoint > ImageStatus.OFFLine) //正常前瞻与截止行不相差5行
+  {
+    for (Ysite = ImageStatus.OFFLine; Ysite < TowPoint; Ysite++) {
+      DetTemp += Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll += Weighting[TowPoint - Ysite - 1];
+    }
+    for (Ysite = (TowPoint + TowPoint - ImageStatus.OFFLine); Ysite > TowPoint;
+         Ysite--) {
+      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll += Weighting[-TowPoint + Ysite - 1];
+    }
+    DetTemp = (ImageDeal[Ysite].Center + DetTemp) / (UnitAll + 1);
+  } else if (ImageStatus.OFFLine < 49) //前瞻等于截至行
+  {
+    for (Ysite = (ImageStatus.OFFLine + 3); Ysite > ImageStatus.OFFLine;
+         Ysite--) {
+      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll += Weighting[-TowPoint + Ysite - 1];
+    }
+    DetTemp = (ImageDeal[ImageStatus.OFFLine].Center + DetTemp) / (UnitAll + 1);
+
   } else {
-    TowPoint = ImageStatus.TowPoint;
+    DetTemp = ImageStatus.Det_True;
   }
-  DetTemp = ImageDeal[TowPoint].Center;
-  
+
   ImageStatus.Det_True = DetTemp;
 
   ImageStatus.TowPoint_True = TowPoint;
 }
+
+
+// void GetDet() {
+//   float DetTemp = 0;
+//   int TowPoint = 0;
+
+//   if (ImageFlag.image_element_rings_flag) {
+//     TowPoint = Circle[ImageFlag.image_element_rings];
+//   } else {
+//     TowPoint = ImageStatus.TowPoint;
+//   }
+
+//   if (ImageStatus.TowPoint < ImageStatus.OFFLine) {
+//     TowPoint = ImageStatus.OFFLine;  
+//   }
+
+//   DetTemp = ImageDeal[TowPoint].Center;
+  
+//   ImageStatus.TowPoint_True = TowPoint;
+//   ImageStatus.Det_True = DetTemp;
+// }
 
 void Element_Judgment_Left_Rings() {
 
