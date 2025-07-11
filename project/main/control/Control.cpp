@@ -42,10 +42,10 @@ std::vector<std::vector<int>> pid_map;
  * @date 2025-07-06
  */
 void init_fuzzy_pid() {
-    pid_left.push_back(control_param(1.20, 3.20, 0.006));
-    pid_left.push_back(control_param(1.65, 3.20, 0.000));
-    pid_left.push_back(control_param(1.85, 3.20, 0.000));
-    pid_left.push_back(control_param(2.05, 3.20, 0.000));
+    pid_left.push_back(control_param(1.20, 3.20, 0.008, 0));
+    pid_left.push_back(control_param(1.65, 3.20, -0.003, 2));
+    pid_left.push_back(control_param(1.85, 3.20, -0.002, 3));
+    pid_left.push_back(control_param(2.05, 3.20, -0.001, 4));
     // pids.push_back(control_param(1.50, 3.0, 0.000));
     // pids.push_back(control_param(1.60, 3.0, 0.000));
     // pids.push_back(control_param(1.70, 2.0, 0.000));
@@ -184,7 +184,7 @@ void set_control_param(control_param param) {
  * @author Cao Xin
  * @date 2025-07-06
  */
-int calc_control_param(int error) {
+int calc_control_param(int &error) {
     // 3 * a, a = (max - det) / max, max = 60 - ImageStatus.TowPoint
     int siz = pid_map.size();
 
@@ -201,17 +201,23 @@ int calc_control_param(int error) {
     debug(idx_x, idx_y, idx);
 
     idx = clip(idx, 0, pid_left.size() - 1);
-    set_control_param(pid_left[idx]);
+
+    control_param param = pid_left[idx];
+
+    error += param.gain * error > 0 ? 1 : -1;
 
     // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
-        set_control_param(control_param(1.50, 3.20, 0.000));
+        
     }
 
     // 直道 PD
     if (ImageStatus.Road_type == Straight) {
-        // set_control_param(control_param(0.80, 0.80, 0.0015));
+
     }
+
+    error += error > 0 ? 1 : -1 * param.gain;
+    set_control_param(param);
     return idx;
 }
 

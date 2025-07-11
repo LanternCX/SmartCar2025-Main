@@ -25,9 +25,11 @@ struct control_param {
     float kp;
     float kd;
     float gyro_p;
+    int gain;
 
-    control_param(float _kp, float _kd, float _gyro_p)
-        : kp(_kp), kd(_kd), gyro_p(_gyro_p){}
+    control_param(float _kp, float _kd, float _gyro_p, int _gain)
+        : kp(_kp), kd(_kd), gyro_p(_gyro_p), gain(_gain){}
+    control_param(){}
 };
 
 
