@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 
@@ -163,7 +164,6 @@ void set_left_speed(int speed){
     
     duty = min(duty, 10000);
     if (now == 0 && duty > 5000) {
-        debug("exit");
         exit(0);
     }
 
@@ -204,7 +204,6 @@ void set_right_speed(int speed){
 
     duty = min(duty, 10000);
     if (now == 0 && duty > 5000) {
-        debug("exit");
         exit(0);
     }
 
@@ -212,9 +211,10 @@ void set_right_speed(int speed){
     if(MOTOR_DEBUG){
         // debug(now, error, duty);
         // debug(det);
-        debug(error);
+        // debug(error);
     }
 }
+
 /**
  * @brief 校准左右轮转速
  * @author Cao Xin
@@ -269,7 +269,7 @@ int sync_motor_duty(int duty) {
         std::cout << "now det:" << mid << '\n';
         int res = check(mid);
         result = mid;
-        debug(res);
+        // debug(res);
         if (res == 0) {
             r = mid - 1;
             break;

@@ -35,17 +35,6 @@
 // 是否打开 Debug 模式
 #define MOTOR_DEBUG 1
 
-
-typedef struct {
-    /**
-     * 电机差速系数
-     */
-    float diff_factor;
-    /**
-     * 电机基础速度
-     */
-    float base_speed;
-} motor_params;
 void motor_init();
 void set_left_speed(int speed);
 void set_right_speed(int speed);

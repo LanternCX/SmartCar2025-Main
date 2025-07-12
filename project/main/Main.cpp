@@ -144,7 +144,7 @@ int run() {
         resize(frame, frame, cv::Size(80, 60));
         // ring_judge(frame);
 
-        debug(ImageFlag.image_element_rings_flag);
+        // debug(ImageFlag.image_element_rings_flag);
 
         if (ImageFlag.Zebra_Flag) {
             exit(0);
@@ -181,13 +181,41 @@ void test_thread_fun() {
 int test() {
     init();
     control = std::thread([&](){
+        static int det = 0;
         while(running.load()) {
-            set_left_speed(80);
-            set_right_speed(80);
-            std::this_thread::sleep_for(timer_interval);
+            if (gpio_get_level(KEY_1) == 0) {
+                det++;
+            }
+            if (gpio_get_level(KEY_0) == 0) {
+                det--;
+            }
+            set_servo_duty(87 + det);
+            debug(det);
+            
+            speed_param speed;
+            speed.center = 150;
+            
+            if (det < 0) {
+                // 舵机打角小于 0 向右转 左轮外轮 右轮内轮
+                calc_speed_det(det, speed.center, speed.right, speed.left);
+            } else if (det > 0) {
+                // 舵机打角大于 0 向左转 右轮外轮 左轮内轮
+                calc_speed_det(det, speed.center, speed.left, speed.right);
+            } if (det == 0) {
+                speed.left = speed.center;
+                speed.right = speed.center;
+            }
+            
+            debug(speed.center, speed.left, speed.right);
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+            set_left_speed(speed.left);
+            set_right_speed(speed.right);
         }
     });
-    while(true);
+    
+    while(true) {
+    }
     return 0;
 }
 
@@ -196,5 +224,5 @@ int test() {
  */
 int main() {
     std::cout << "version: idol" << std::endl;
-    return run();
+    return test();
 }
