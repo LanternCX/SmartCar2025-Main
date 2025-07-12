@@ -18,6 +18,7 @@
 #include "Color.hpp"
 #include "Main.hpp"
 #include "zf_device_ips200_fb.h"
+#include "zf_driver_encoder.h"
 #include "zf_driver_gpio.h"
 
 /**
@@ -28,6 +29,7 @@
  */
 
 std::thread control;
+std::thread test_thread;
 
 std::atomic<bool> running(true);
 
@@ -42,7 +44,7 @@ void cleanup() {
 
     // Close control thread
     running.store(false);
-    if (control.joinable()) {
+    if (control.joinable() && std::this_thread::get_id() != control.get_id()) {
         control.join();
     }
 
@@ -124,7 +126,7 @@ int run() {
 
         // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
-        // ring_judge(frame);
+        ring_judge(frame);
     }
     
     // control thread
@@ -142,37 +144,14 @@ int run() {
         resize(frame, frame, cv::Size(80, 60));
         // ring_judge(frame);
 
+        debug(ImageFlag.image_element_rings_flag);
+
         if (ImageFlag.Zebra_Flag) {
             exit(0);
         }
         if ((int)gpio_get_level(KEY_1) == 0) {
             exit(0);
         }
-
-        // cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
-
-        // for (int i = 0; i < 60; ++i) {
-        //     for (int j = 0; j < 80; ++j) {
-        //         uchar v = img3[i][j];
-        //         cv::Vec3b color;
-
-        //         switch (v) {
-        //             case 0:  color = cv::Vec3b(0, 0, 0);       break; // 黑色
-        //             case 1:  color = cv::Vec3b(255, 255, 255); break; // 白色
-        //             case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
-        //             case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
-        //             case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
-        //             case 9:  color = cv::Vec3b(255, 255, 0);     break; // 蓝色
-        //             default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
-        //         }
-
-        //         color_image.at<cv::Vec3b>(i, j) = color;
-        //     }
-        // }
-        // cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
-        // draw_rgb_img(color_image);
-        // debug(center);   
-
     }
     return 0;
 }
@@ -190,6 +169,26 @@ int motor_test() {
     init();
     int duty = 1700;
     left_motor_run(duty, 1700);
+    return 0;
+}
+
+void test_thread_fun() {
+    while (running.load()) {
+        
+    }
+}
+
+int test() {
+    init();
+    control = std::thread([&](){
+        while(running.load()) {
+            set_left_speed(80);
+            set_right_speed(80);
+            std::this_thread::sleep_for(timer_interval);
+        }
+    });
+    while(true);
+    return 0;
 }
 
 /**

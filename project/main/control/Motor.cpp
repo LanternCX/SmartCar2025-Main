@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstdlib>
 #include <iostream>
 
 #include "zf_common_headfile.h"
@@ -31,7 +32,7 @@ low_pass_param left_low_pass;
 low_pass_param right_low_pass;
 
 // Duty
-const int base_duty = 2750;
+const int base_duty = 2700;
 // const int base_duty = 0;
 const int det_duty = 0;
 static int left_duty = base_duty + det_duty;
@@ -41,20 +42,20 @@ static int right_duty = base_duty;
  * @brief 初始化 PID 控制器
  * @param pid PID 控制器参数结构体指针
  * @return none
- * @author Cao Xin
+ * @author Cao Xin 
  * @date 2025-04-05
  */
 void init_motor_pid(pid_param &pid){
-    pid.kp = 0.030;
-    pid.ki = 0.035;
-    pid.kd = 0.025;
+    pid.kp = 0.100;
+    pid.ki = 0.100;
+    pid.kd = 0.000;
 
-    pid.p_max = 30.0;
-    pid.i_max = 30.0;
-    pid.d_max = 30.0;
+    pid.p_max = 300.0;
+    pid.i_max = 300.0;
+    pid.d_max = 300.0;
 
-    pid.out_min = -30.0;
-    pid.out_max = 30.0;
+    pid.out_min = -300.0;
+    pid.out_max = 300.0;
     
     pid.out_p = 0.0;
     pid.out_i = 0.0;
@@ -85,10 +86,10 @@ void init_motor_low_pass(low_pass_param &lowpass){
  * @date 2025-04-05
  */
 void left_motor_run(int duty, int dir){
-    gpio_set_level(MOTOR1_DIR, dir);
-    int duty_real = duty * (MOTOR1_PWM_DUTY_MAX / 10000);
+    gpio_set_level(MOTOR2_DIR, dir);
+    int duty_real = duty * (MOTOR2_PWM_DUTY_MAX / 10000);
     duty_real = min(duty, 3000);
-    pwm_set_duty(MOTOR1_PWM, duty_real);
+    pwm_set_duty(MOTOR2_PWM, duty_real);
 }
 
 /**
@@ -100,10 +101,10 @@ void left_motor_run(int duty, int dir){
  * @date 2025-04-05
  */
 void right_motor_run(int duty, int dir){
-    gpio_set_level(MOTOR2_DIR, dir);
-    int duty_real = duty * (MOTOR2_PWM_DUTY_MAX / 10000);
+    gpio_set_level(MOTOR1_DIR, dir);
+    int duty_real = duty * (MOTOR1_PWM_DUTY_MAX / 10000);
     duty_real = min(duty, 3000);
-    pwm_set_duty(MOTOR2_PWM, duty_real);
+    pwm_set_duty(MOTOR1_PWM, duty_real);
 }
 
 /**
@@ -138,24 +139,38 @@ void motor_init(){
  * @date 2025-04-05
  */
 void set_left_speed(int speed){
+    static int duty = 0;
     // 获取当前转速
     // 左右编码器因为朝向安装的不同左电机需要取相反数
-    float now = -encoder_get_count(ENCODER_2);
+    float now = encoder_get_count(ENCODER_1);
     // 对转速进行低通滤波
     now = low_pass_filter(&left_low_pass, now);
+
     // 计算误差
-    float error = speed - now;
+    static float error = speed - now;
+    if (now != 0) {
+        error = speed - now;
+    }
+
     // PID 计算增量
     float det = increment_pid_solve(&left_pid, error);
     
     // 计算输出值
-    // left_duty += det;
+    duty += det;
     
     // 输出到电机控制
-    left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
+    left_motor_run(abs(duty), duty > 0 ? 1 : 0);
+    
+    duty = min(duty, 10000);
+    if (now == 0 && duty > 5000) {
+        debug("exit");
+        exit(0);
+    }
+
     if (MOTOR_DEBUG) {
-        // debug("left", now);
-        // cout << now << '\n';
+        // debug(left_pid.out_p, left_pid.out_i, left_pid.out_d);
+        // debug(now);
+        // std::cout << error << '\n';
     }
 }
 
@@ -167,27 +182,37 @@ void set_left_speed(int speed){
  * @date 2025-04-05
  */
 void set_right_speed(int speed){
+    static int duty = 0;
     // 获取当前转速
-    float now = encoder_get_count(ENCODER_1);
+    float now = -encoder_get_count(ENCODER_2);
     // 对转速进行低通滤波
     now = low_pass_filter(&right_low_pass, now);
+
+    static float error = speed - now;
+    if (now != 0) {
+        error = speed - now;
+    }
     // 计算误差
-    float error = speed - now;
     // PID 计算增量
     float det = increment_pid_solve(&right_pid, error);
     
     // 计算输出值
-    // right_duty += det;
-
-    
+    duty += det;
     // 输出到电机控制
     // debug(abs(right_duty));
-    right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
-    
+    right_motor_run(abs(duty), duty < 0 ? 1 : 0);
+
+    duty = min(duty, 10000);
+    if (now == 0 && duty > 5000) {
+        debug("exit");
+        exit(0);
+    }
+
     // Debug 信息
     if(MOTOR_DEBUG){
-        // debug("right", now);
-        // cout << now << '\n';
+        // debug(now, error, duty);
+        // debug(det);
+        debug(error);
     }
 }
 /**

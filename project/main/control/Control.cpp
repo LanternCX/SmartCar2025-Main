@@ -43,9 +43,9 @@ std::vector<std::vector<int>> pid_map;
  */
 void init_fuzzy_pid() {
     pid_left.push_back(control_param(1.20, 3.20, 0.008, 0));
-    pid_left.push_back(control_param(1.65, 3.20, -0.003, 2));
-    pid_left.push_back(control_param(1.85, 3.20, -0.002, 3));
-    pid_left.push_back(control_param(2.05, 3.20, -0.001, 4));
+    pid_left.push_back(control_param(1.75, 3.20, 0.000, 3));
+    pid_left.push_back(control_param(1.85, 3.20, -0.002, 4));
+    pid_left.push_back(control_param(2.05, 3.20, -0.001, 5));
     // pids.push_back(control_param(1.50, 3.0, 0.000));
     // pids.push_back(control_param(1.60, 3.0, 0.000));
     // pids.push_back(control_param(1.70, 2.0, 0.000));
@@ -57,8 +57,8 @@ void init_fuzzy_pid() {
 
     pid_map = {
         { 0, 0, 0, 0, },
-        { 1, 1, 1, 1, },
-        { 2, 2, 2, 2, },
+        { 1, 1, 2, 2, },
+        { 2, 2, 3, 3, },
         { 3, 3, 3, 3, },
     };
     // pid_map = {
@@ -106,7 +106,7 @@ void init_dir_pid(pid_param &pid) {
  * @date 2025-04-06
  */
 void init_dir_lowpass(low_pass_param &lowpass) {
-    lowpass.alpha = 0.5;
+    lowpass.alpha = 0.6;
 }
 
 /**
@@ -198,7 +198,6 @@ int calc_control_param(int &error) {
     float alpha_x = 1.0 * det_x / max_x;
     int idx_x = clip(std::floor(siz * alpha_x), 0, siz - 1);
     int idx = pid_map[idx_y][idx_x];
-    debug(idx_x, idx_y, idx);
 
     idx = clip(idx, 0, pid_left.size() - 1);
 
@@ -208,12 +207,12 @@ int calc_control_param(int &error) {
 
     // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
-        
+        pid_left.push_back(control_param(1.85, 3.20, -0.002, 4));
     }
 
     // 直道 PD
     if (ImageStatus.Road_type == Straight) {
-
+        
     }
 
     error += error > 0 ? 1 : -1 * param.gain;
@@ -252,10 +251,9 @@ void to_center(int now, int target) {
     // 角加速度 向左- 向右+
     int gyro_y_det = pid_slove(&gyro_pid, gyro_y);
     servo_duty_det += gyro_y_det;
-    debug(gyro_y_det);
     
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
     
-    set_left_speed(speed.current);
-    set_right_speed(speed.current);
+    set_left_speed(80);
+    set_right_speed(80);
 }
