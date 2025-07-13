@@ -43,7 +43,10 @@ std::vector<std::vector<int>> pid_map;
  */
 void init_fuzzy_pid() {
     int base_speed = 150; 
-    pid_left.push_back(control_param(0.00, 0.00, 0.000, 0, base_speed));
+    pid_left.push_back(control_param(0.80, 1.60, 0.003, 0, base_speed));
+    // pid_left.push_back(control_param(1.00, 1.60, -0.000, 0, base_speed));
+    // pid_left.push_back(control_param(1.20, 1.60, -0.000, 0, base_speed));
+    // pid_left.push_back(control_param(1.40, 1.60, -0.000, 0, base_speed));
     // pid_left.push_back(control_param(1.75, 3.20, 0.000, 3, base_speed));
     // pid_left.push_back(control_param(1.85, 3.20, -0.002, 4, base_speed));
     // pid_left.push_back(control_param(2.05, 3.20, -0.001, 5, base_speed));
@@ -107,7 +110,7 @@ void init_dir_pid(pid_param &pid) {
  * @date 2025-04-06
  */
 void init_dir_lowpass(low_pass_param &lowpass) {
-    lowpass.alpha = 0.6;
+    lowpass.alpha = 1.0;
 }
 
 /**
@@ -201,8 +204,14 @@ void calc_speed_det(const int & angle, const int & v_center, int & v_in, int & v
     debug(L1, L2, L3, tan);
     
     float R = L / tan;
-    v_in = (R - W / 2) / R * v_center;
-    v_out = (R + W / 2) / R * v_center;
+    
+    float v_in_temp = ((R - W / 2) / R * v_center);
+    float v_out_temp = ((R + W / 2) / R * v_center);
+    float det = std::abs(v_in_temp - v_out_temp);
+    
+    const float alpha = 0.2;
+    v_in = v_center - det * (1 - alpha);
+    v_out = v_center + det * alpha;
 }
 
 /**
@@ -304,8 +313,6 @@ void to_center(int now, int target) {
         speed.left = speed.center;
         speed.right = speed.center;
     }
-    
-    debug(speed.center, speed.left, speed.right);
 
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
 

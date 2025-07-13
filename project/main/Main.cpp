@@ -71,8 +71,8 @@ void sigint_handler(int signum) {
 void timer_thread() {
     while (running.load()) {
         to_center(ImageStatus.Det_True, ImageStatus.MiddleLine);
+        debug(ImageStatus.Det_True);
         std::this_thread::sleep_for(timer_interval);
-        // debug(ImageFlag.image_element_rings_flag);
     }
 }
 
@@ -152,30 +152,31 @@ int run() {
         if ((int)gpio_get_level(KEY_1) == 0) {
             exit(0);
         }
+
+        // cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
+
+        // for (int i = 0; i < 60; ++i) {
+        //     for (int j = 0; j < 80; ++j) {
+        //         uchar v = img3[i][j];
+        //         cv::Vec3b color;
+
+        //         switch (v) {
+        //             case 0:  color = cv::Vec3b(0, 0, 0);       break; // 黑色
+        //             case 1:  color = cv::Vec3b(255, 255, 255); break; // 白色
+        //             case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
+        //             case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
+        //             case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
+        //             case 9:  color = cv::Vec3b(255, 255, 0);     break; // 蓝色
+        //             default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
+        //         }
+
+        //         color_image.at<cv::Vec3b>(i, j) = color;
+        //     }
+        // }
+        // cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
+        // draw_rgb_img(color_image);
     }
     return 0;
-}
-
-/**
- * @brief 测试
- */
-int motor_sync() {
-    init();
-    sync_motor_duty(1900);
-    return 0;
-}
-
-int motor_test() {
-    init();
-    int duty = 1700;
-    left_motor_run(duty, 1700);
-    return 0;
-}
-
-void test_thread_fun() {
-    while (running.load()) {
-        
-    }
 }
 
 int test() {
@@ -224,5 +225,5 @@ int test() {
  */
 int main() {
     std::cout << "version: idol" << std::endl;
-    return test();
+    return run();
 }

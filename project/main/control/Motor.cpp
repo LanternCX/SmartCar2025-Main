@@ -47,7 +47,7 @@ static int right_duty = base_duty;
  * @date 2025-04-05
  */
 void init_motor_pid(pid_param &pid){
-    pid.kp = 0.100;
+    pid.kp = 0.200;
     pid.ki = 0.100;
     pid.kd = 0.000;
 
