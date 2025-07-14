@@ -31,7 +31,8 @@ low_pass_param gyro_low_pass;
 // 当前速度参数
 speed_param speed;
 
-std::vector<control_param> pids;
+std::vector<control_param> pid_left;
+std::vector<control_param> pid_right;
 
 std::vector<std::vector<int>> pid_map;
 
@@ -42,10 +43,15 @@ std::vector<std::vector<int>> pid_map;
  * @date 2025-07-06
  */
 void init_fuzzy_pid() {
-    pids.push_back(control_param(1.20, 3.20, 0.005));
-    pids.push_back(control_param(1.50, 3.20, 0.000));
-    pids.push_back(control_param(1.50, 3.20, 0.000));
-    pids.push_back(control_param(1.50, 3.20, 0.000));
+    pid_left.push_back(control_param(1.20, 3.20, 0.005));
+    pid_left.push_back(control_param(1.50, 3.20, 0.000));
+    pid_left.push_back(control_param(1.50, 3.20, 0.000));
+    pid_left.push_back(control_param(1.50, 3.20, 0.000));
+
+    pid_right.push_back(control_param(1.20, 3.20, 0.005));
+    pid_right.push_back(control_param(1.50, 3.20, 0.000));
+    pid_right.push_back(control_param(1.50, 3.20, 0.000));
+    pid_right.push_back(control_param(1.50, 3.20, 0.000));
     // pids.push_back(control_param(1.50, 3.0, 0.000));
     // pids.push_back(control_param(1.60, 3.0, 0.000));
     // pids.push_back(control_param(1.70, 2.0, 0.000));
@@ -200,8 +206,8 @@ int calc_control_param(int error) {
     int idx = pid_map[idx_y][idx_x];
     debug(idx_x, idx_y, idx);
 
-    idx = clip(idx, 0, pids.size() - 1);
-    set_control_param(pids[idx]);
+    idx = clip(idx, 0, pid_left.size() - 1);
+    set_control_param(pid_left[idx]);
 
     // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
@@ -227,7 +233,7 @@ void to_center(int now, int target) {
     // 误差
     static int error = 0;
     // 舵机占空比相较目标点的位置值
-    static int servo_duty_det = 0;
+    static float servo_duty_det = 0;
     
     if (now != 0) {
         error = target - now;
@@ -244,7 +250,7 @@ void to_center(int now, int target) {
     // servo_duty_det = bangbang_pid_solve(&dir_pid, error, 20, 30);
     servo_duty_det = pid_slove(&dir_pid, error);
     // 角加速度 向左- 向右+
-    int gyro_y_det = pid_slove(&gyro_pid, gyro_y);
+    float gyro_y_det = pid_slove(&gyro_pid, gyro_y);
     servo_duty_det += gyro_y_det;
     debug(gyro_y_det);
     

@@ -34,5 +34,5 @@ typedef struct {
 } servo_params;
 
 void servo_init();
-void set_servo_duty(int duty);
+void set_servo_duty(float duty);
 servo_params get_servo_param();

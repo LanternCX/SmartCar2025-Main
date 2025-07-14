@@ -39,7 +39,7 @@ void init_servo_low_pass(low_pass_param &lowpass){
  * @author Cao Xin
  * @date 2025-04-06
  */
-void set_servo_duty(int duty){
+void set_servo_duty(float duty){
     duty = clip(duty, SERVO_MOTOR_L_MAX, SERVO_MOTOR_R_MAX);
     pwm_set_duty(SERVO_MOTOR1_PWM, (uint16)SERVO_MOTOR_DUTY(duty));
 }
@@ -54,7 +54,7 @@ void servo_init(){
     // 获取PWM设备信息
     pwm_get_dev_info(SERVO_MOTOR1_PWM, &servo_pwm_info);
     init_servo_low_pass(centerLowPass);
-    servo_param.base_duty = 87;
+    servo_param.base_duty = 89.4;
     set_servo_duty(servo_param.base_duty);
 }
 
