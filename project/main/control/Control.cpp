@@ -39,7 +39,7 @@ control_param pid_ramp;
 
 std::vector<std::vector<int>> pid_map;
 
-const int base_duty = 0;
+const int base_duty = 2400;
 
 /**
  * @brief 模糊 PID 初始化
@@ -67,16 +67,7 @@ void init_fuzzy_pid() {
         control_param(1.20, 3.20, 0.002, 0.003, 24)
     };
 
-    
-    
-    // pids.push_back(control_param(1.50, 3.0, 0.000));
-    // pids.push_back(control_param(1.60, 3.0, 0.000));
-    // pids.push_back(control_param(1.70, 2.0, 0.000));
-    // pids.push_back(control_param(1.80, 2.0, 0.000));
-    // pids.push_back(control_param(1.90, 1.0, 0.000));
-    // pids.push_back(control_param(1.30, 1.0, 0.000));
-    // pids.push_back(control_param(1.40, 1.0, 0.000));
-    // pids.push_back(control_param(1.50, 1.0, 0.000));
+    pid_ramp = control_param(0.01, 0.00, 0, 0.0, 40);
 
     pid_map = {
         { 0, 0, 0, 0, },
@@ -84,12 +75,6 @@ void init_fuzzy_pid() {
         { 2, 2, 3, 3, },
         { 3, 3, 3, 3, },
     };
-    // pid_map = {
-    //     { 0, 0, 0, 0, },
-    //     { 1, 1, 1, 1, },
-    //     { 2, 2, 2, 2, },
-    //     { 3, 3, 3, 3, },
-    // };
 }
 
 /**
@@ -263,7 +248,7 @@ control_param calc_control_param(int error) {
 
     idx = clip(idx, 0, pid_left.size() - 1);
 
-    // 圆环 PD
+    // 圆环参数
     if (ImageFlag.image_element_rings_flag) {
         int idx = !(ImageFlag.image_element_rings_flag == 5 || ImageFlag.image_element_rings_flag == 6);
         if (ImageFlag.is_flip == 0) {
@@ -278,9 +263,10 @@ control_param calc_control_param(int error) {
         }
     }
 
-    // 直道 PD
-    if (ImageStatus.Road_type == Straight) {
-        // set_control_param(control_param(0.80, 0.80, 0.0015));
+    // 坡道参数
+    if (ImageFlag.ramp_flag) {
+        set_control_param(pid_ramp);
+        return pid_ramp;
     }
     
     if (error >= 0) {

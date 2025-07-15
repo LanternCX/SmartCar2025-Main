@@ -284,6 +284,9 @@ typedef struct {
 
   // 是否有红箱
   bool is_red;
+
+  // 坡道状态
+  int ramp_flag;
 } ImageFlagtypedef;
 
 typedef struct {

@@ -20,6 +20,7 @@
 #include "zf_device_ips200_fb.h"
 #include "zf_driver_delay.h"
 #include "zf_driver_gpio.h"
+#include "Ramp.hpp"
 
 /**
  * @file Main.cpp
@@ -69,8 +70,11 @@ void sigint_handler(int signum) {
  */
 void timer_thread() {
     while (running.load()) {
+        // 坡道识别
+        ramp_detect();
+        // 寻线到中线
         to_center(ImageStatus.Det_True, ImageStatus.MiddleLine);
-        debug(ImageFlag.image_element_rings_flag);
+        debug(ImageFlag.ramp_flag);
         std::this_thread::sleep_for(timer_interval);
     }
 }
@@ -96,6 +100,8 @@ void init() {
     
     // Init Controller
     control_init(65, 65);
+
+    ramp_detect_init();
 
     // Init IMU
     imu_get_dev_info();
@@ -145,7 +151,7 @@ int run() {
 
         // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
-        // ring_judge(frame);
+        ring_judge(frame);
 
         if (ImageFlag.Zebra_Flag) {
             exit(0);
@@ -175,26 +181,21 @@ int run() {
             }
         }
         cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
-        draw_rgb_img(color_image);
+        // draw_rgb_img(color_image);
         // // debug(center);
 
     }
     return 0;
 }
 
-/**
- * @brief 测试
- */
-int motor_sync() {
+int test() {
     init();
-    sync_motor_duty(1900);
-    return 0;
-}
+    while (true) {
+        ramp_detect();
+        system_delay_ms(20);
+    }
 
-int motor_test() {
-    init();
-    int duty = 1700;
-    left_motor_run(duty, 1700);
+    return 0;
 }
 
 /**

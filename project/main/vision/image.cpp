@@ -93,6 +93,7 @@ void Data_Settings(void) //参数赋值
 
   ImageFlag.is_flip = false;
   ImageFlag.stat_from = 0;
+  ImageFlag.ramp_flag = 0;
 
   //   SteerPIDdata.Dl = 21.07;
   //   SteerPIDdata.Dh = 5.0;
