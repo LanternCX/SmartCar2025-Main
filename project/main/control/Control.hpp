@@ -24,10 +24,13 @@ typedef struct{
 struct control_param {
     float kp;
     float kd;
+    float kp2;
     float gyro_p;
+    float bangbang;
 
-    control_param(float _kp, float _kd, float _gyro_p)
-        : kp(_kp), kd(_kd), gyro_p(_gyro_p){}
+    control_param(float _kp, float _kd, float _kp2, float _gyro_p)
+        : kp(_kp), kd(_kd), kp2(_kp2), gyro_p(_gyro_p){}
+    control_param(){}
 };
 
 

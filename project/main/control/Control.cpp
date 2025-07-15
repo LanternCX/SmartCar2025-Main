@@ -43,15 +43,15 @@ std::vector<std::vector<int>> pid_map;
  * @date 2025-07-06
  */
 void init_fuzzy_pid() {
-    pid_left.push_back(control_param(1.20, 3.20, 0.005));
-    pid_left.push_back(control_param(1.50, 3.20, 0.000));
-    pid_left.push_back(control_param(1.50, 3.20, 0.000));
-    pid_left.push_back(control_param(1.50, 3.20, 0.000));
+    pid_left.push_back(control_param(1.20, 3.20, 0, 0.005));
+    pid_left.push_back(control_param(1.30, 3.20, 0.001, 0.000));
+    pid_left.push_back(control_param(1.30, 3.20, 0.001, 0.000));
+    pid_left.push_back(control_param(1.30, 3.20, 0.001, 0.000));
 
-    pid_right.push_back(control_param(1.20, 3.20, 0.005));
-    pid_right.push_back(control_param(1.50, 3.20, 0.000));
-    pid_right.push_back(control_param(1.50, 3.20, 0.000));
-    pid_right.push_back(control_param(1.50, 3.20, 0.000));
+    pid_right.push_back(control_param(1.20, 3.20, 0, 0.005));
+    pid_right.push_back(control_param(1.30, 3.20, 0.001, 0.000));
+    pid_right.push_back(control_param(1.30, 3.20, 0.001, 0.000));
+    pid_right.push_back(control_param(1.30, 3.20, 0.001, 0.000));
     // pids.push_back(control_param(1.50, 3.0, 0.000));
     // pids.push_back(control_param(1.60, 3.0, 0.000));
     // pids.push_back(control_param(1.70, 2.0, 0.000));
@@ -63,8 +63,8 @@ void init_fuzzy_pid() {
 
     pid_map = {
         { 0, 0, 0, 0, },
-        { 1, 1, 1, 1, },
-        { 2, 2, 2, 2, },
+        { 1, 1, 2, 2, },
+        { 2, 2, 3, 3, },
         { 3, 3, 3, 3, },
     };
     // pid_map = {
@@ -190,7 +190,7 @@ void set_control_param(control_param param) {
  * @author Cao Xin
  * @date 2025-07-06
  */
-int calc_control_param(int error) {
+control_param calc_control_param(int error) {
     // 3 * a, a = (max - det) / max, max = 60 - ImageStatus.TowPoint
     int siz = pid_map.size();
 
@@ -204,10 +204,8 @@ int calc_control_param(int error) {
     float alpha_x = 1.0 * det_x / max_x;
     int idx_x = clip(std::floor(siz * alpha_x), 0, siz - 1);
     int idx = pid_map[idx_y][idx_x];
-    debug(idx_x, idx_y, idx);
 
     idx = clip(idx, 0, pid_left.size() - 1);
-    set_control_param(pid_left[idx]);
 
     // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
@@ -218,7 +216,17 @@ int calc_control_param(int error) {
     if (ImageStatus.Road_type == Straight) {
         // set_control_param(control_param(0.80, 0.80, 0.0015));
     }
-    return idx;
+
+    debug(idx);
+    
+    if (error >= 0) {
+        set_control_param(pid_left[idx]);
+        return pid_left[idx];
+    } else {
+        set_control_param(pid_right[idx]);
+        return pid_right[idx];
+    }
+
 }
 
 /**
@@ -241,7 +249,7 @@ void to_center(int now, int target) {
     }
     
     // 计算模糊 pid
-    calc_control_param(error);
+    control_param param = calc_control_param(error);
 
     int gyro_y = imu_get_raw(imu_file_path[GYRO_Y_RAW]);
     gyro_y = low_pass_filter(&gyro_low_pass, gyro_y);
@@ -252,7 +260,10 @@ void to_center(int now, int target) {
     // 角加速度 向左- 向右+
     float gyro_y_det = pid_slove(&gyro_pid, gyro_y);
     servo_duty_det += gyro_y_det;
-    debug(gyro_y_det);
+
+    servo_duty_det += abs(error) * error * param.kp2;
+
+    debug(servo_duty_det);
     
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
     

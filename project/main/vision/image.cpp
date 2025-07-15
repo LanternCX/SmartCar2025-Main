@@ -75,7 +75,7 @@ void Data_Settings(void) //参数赋值
   ImageStatus.straight_acc = 0;
   ImageStatus.Road_type = zero;
 
-  ImageStatus.TowPoint = 24;
+  ImageStatus.TowPoint = 18;
   ImageStatus.Threshold_static = 70;  //静态阈值  40-80
   ImageStatus.Threshold_detach = 180; //阳光算法  亮斑分离140-220
   ImageScanInterval = 2;
