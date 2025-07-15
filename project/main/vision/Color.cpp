@@ -23,7 +23,7 @@ cv::Mat crop_bottom_half(const cv::Mat& src) {
     int height = src.rows;
     int width = src.cols;
     // 定义从中间到底部的矩形区域
-    cv::Rect roi(0, height / 2, width, height - height / 2);
+    cv::Rect roi(0, height / 3, width, height - height / 3);
     return src(roi).clone(); // 返回裁剪图像副本
 }
 

@@ -1272,8 +1272,8 @@ void Element_Handle_Left_Rings() {
   if (ImageFlag.image_element_rings_flag == 8) {
     if (
         // Straight_Judge(2, ImageStatus.OFFLine+15, 50) < 1
-        ImageStatus.Right_Line < 10 && 
-        ImageStatus.OFFLine < 10 && 
+        (ImageStatus.Right_Line < 10 && 
+        ImageStatus.OFFLine < 10) || 
         ImageFlag.is_red
       ) {
       //右边为直线且截止行（前瞻值）很小
@@ -1844,8 +1844,8 @@ void Element_Test() {
   if (ImageStatus.Road_type !=
       Ramp) /*&& circle_num < 2 */ //圆环检测//&& ImageStatus.Road_type != Ramp
   {
-    // Element_Judgment_Left_Rings();  //左圆环检测
-    // Element_Judgment_Right_Rings(); //右圆环检测
+    Element_Judgment_Left_Rings();  //左圆环检测
+    Element_Judgment_Right_Rings(); //右圆环检测
   }
 }
 

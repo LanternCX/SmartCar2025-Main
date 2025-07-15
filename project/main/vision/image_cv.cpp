@@ -64,6 +64,8 @@ char image_cv_zip(cv::Mat &src) {
   // debug(width, height);
   frame = frame(roi).clone();
 
+  frame.copyTo(src);
+
   // 转化为灰度
   Mat gray;
   // frame为彩色输入图像，gray为灰度输出图像

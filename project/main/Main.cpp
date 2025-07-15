@@ -145,37 +145,37 @@ int run() {
 
         // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
-        ring_judge(frame);
+        // ring_judge(frame);
 
         if (ImageFlag.Zebra_Flag) {
-            // exit(0);
+            exit(0);
         }
         if ((int)gpio_get_level(KEY_1) == 0) {
             exit(0);
         }
 
-        // cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
+        cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
 
-        // for (int i = 0; i < 60; ++i) {
-        //     for (int j = 0; j < 80; ++j) {
-        //         uchar v = img3[i][j];
-        //         cv::Vec3b color;
+        for (int i = 0; i < 60; ++i) {
+            for (int j = 0; j < 80; ++j) {
+                uchar v = img3[i][j];
+                cv::Vec3b color;
 
-        //         switch (v) {
-        //             case 0:  color = cv::Vec3b(0, 0, 0);       break; // 黑色
-        //             case 1:  color = cv::Vec3b(255, 255, 255); break; // 白色
-        //             case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
-        //             case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
-        //             case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
-        //             case 9:  color = cv::Vec3b(255, 255, 0);     break; // 蓝色
-        //             default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
-        //         }
+                switch (v) {
+                    case 0:  color = cv::Vec3b(0, 0, 0);       break; // 黑色
+                    case 1:  color = cv::Vec3b(255, 255, 255); break; // 白色
+                    case 6:  color = cv::Vec3b(0, 0, 255);     break; // 红色 (BGR)
+                    case 7:  color = cv::Vec3b(0, 255, 0);     break; // 绿色
+                    case 8:  color = cv::Vec3b(255, 0, 0);     break; // 蓝色
+                    case 9:  color = cv::Vec3b(255, 255, 0);     break; // 蓝色
+                    default: color = cv::Vec3b(128, 128, 128); break; // 其它值设为灰色
+                }
 
-        //         color_image.at<cv::Vec3b>(i, j) = color;
-        //     }
-        // }
-        // cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
-        // // draw_rgb_img(color_image);
+                color_image.at<cv::Vec3b>(i, j) = color;
+            }
+        }
+        cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
+        draw_rgb_img(color_image);
         // // debug(center);
 
     }

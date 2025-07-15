@@ -33,11 +33,13 @@ speed_param speed;
 
 std::vector<control_param> pid_left;
 std::vector<control_param> pid_right;
-control_param pid_ring;
+std::vector<control_param> pid_left_ring;
+std::vector<control_param> pid_right_ring;
+control_param pid_ramp;
 
 std::vector<std::vector<int>> pid_map;
 
-const int base_duty = 2600;
+const int base_duty = 0;
 
 /**
  * @brief 模糊 PID 初始化
@@ -47,16 +49,26 @@ const int base_duty = 2600;
  */
 void init_fuzzy_pid() {
     pid_left.push_back(control_param(1.00, 3.20, 0, 0.005, 15));
-    pid_left.push_back(control_param(1.20, 3.20, 0.001, 0.000, 24));
-    pid_left.push_back(control_param(1.20, 3.20, 0.002, 0.000, 24));
-    pid_left.push_back(control_param(1.20, 3.20, 0.003, 0.000, 24));
+    pid_left.push_back(control_param(1.20, 3.20, 0.001, 0.000, 20));
+    pid_left.push_back(control_param(1.20, 3.20, 0.002, 0.000, 20));
+    pid_left.push_back(control_param(1.20, 3.20, 0.003, 0.000, 20));
 
     pid_right.push_back(control_param(1.00, 3.20, 0, 0.005, 15));
-    pid_right.push_back(control_param(1.40, 3.20, 0.001, 0.000, 24));
-    pid_right.push_back(control_param(1.40, 3.20, 0.002, 0.000, 24));
-    pid_right.push_back(control_param(1.40, 3.20, 0.003, 0.000, 24));
+    pid_right.push_back(control_param(1.40, 3.20, 0.002, 0.000, 20));
+    pid_right.push_back(control_param(1.40, 3.20, 0.003, 0.000, 20));
+    pid_right.push_back(control_param(1.40, 3.20, 0.004, 0.000, 20));
 
-    pid_ring = control_param(1.20, 3.20, 0.001, 0.000, 24);
+    pid_right_ring = {
+        control_param(1.20, 2.40, 0.001, 0.000, 22), 
+        control_param(1.20, 3.20, 0.002, 0.003, 24)
+    };
+    pid_left_ring = {
+        control_param(1.20, 2.40, 0.001, 0.000, 22), 
+        control_param(1.20, 3.20, 0.002, 0.003, 24)
+    };
+
+    
+    
     // pids.push_back(control_param(1.50, 3.0, 0.000));
     // pids.push_back(control_param(1.60, 3.0, 0.000));
     // pids.push_back(control_param(1.70, 2.0, 0.000));
@@ -253,8 +265,17 @@ control_param calc_control_param(int error) {
 
     // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
-        // control_param param = control_param(1.20, 3.20, 0.001, 0.000, 24);
-        // set_control_param(control_param(1.20, 1.50, 0.0000));
+        int idx = !(ImageFlag.image_element_rings_flag == 5 || ImageFlag.image_element_rings_flag == 6);
+        if (ImageFlag.is_flip == 0) {
+            set_control_param(pid_left_ring[idx]);
+            debug("left");
+            return pid_left_ring[idx];
+        }
+        if (ImageFlag.is_flip == 1) {
+            set_control_param(pid_right_ring[idx]);
+            debug("right");
+            return pid_right_ring[idx];
+        }
     }
 
     // 直道 PD
