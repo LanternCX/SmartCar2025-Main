@@ -31,11 +31,6 @@ low_pass_param left_low_pass;
 low_pass_param right_low_pass;
 
 // Duty
-const int base_duty = 2500;
-// const int base_duty = 0;
-const int det_duty = 0;
-static int left_duty = base_duty + det_duty;
-static int right_duty = base_duty;
 
 /**
  * @brief 初始化 PID 控制器
@@ -152,7 +147,7 @@ void set_left_speed(int speed){
     // left_duty += det;
     
     // 输出到电机控制
-    left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
+    // left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
     if (MOTOR_DEBUG) {
         // debug("left", now);
         // cout << now << '\n';
@@ -182,7 +177,7 @@ void set_right_speed(int speed){
     
     // 输出到电机控制
     // debug(abs(right_duty));
-    right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
+    // right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
     
     // Debug 信息
     if(MOTOR_DEBUG){

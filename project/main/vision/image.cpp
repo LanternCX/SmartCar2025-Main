@@ -354,26 +354,27 @@ static void DrawLinesProcess(void) //////不用更改
         JumpPoint[0].type; //记录本行是否找到边线，即边线类型
     ImageDeal[Ysite].IsRightFind = JumpPoint[1].type;
 
-    //*************************添加右******************************** */
+    // *************************添加右********************************
     if (ImageDeal[Ysite].IsRightFind == 'W') {
       for (Xsite = (ImageDeal[Ysite].RightBorder - 1);
            Xsite >= (ImageDeal[Ysite].LeftBorder + 1); Xsite--) {
         if ((*(PicTemp + Xsite) != 0) && (*(PicTemp + Xsite + 1) == 0)) {
-          ImageDeal[Ysite].RightBorder =
-              Xsite; //如果上一行左边线的右边有黑白跳变则为绝对边线直接取出
+          ImageDeal[Ysite].RightBorder = Xsite;
           ImageDeal[Ysite].IsRightFind = 'T';
           break;
         }
       }
     }
 
-    //*************************添加左******************************** */
-    if (ImageDeal[Ysite].IsLeftFind == 'W') {
-      for (Xsite = (ImageDeal[Ysite].LeftBorder + 1);
-           Xsite <= (ImageDeal[Ysite].RightBorder - 1); Xsite++) {
+    // *************************添加左********************************
+  if (ImageDeal[Ysite].IsLeftFind == 'W') {
+     // 用上一行的 RightBorder 作为上限，避免被本行右角点影响
+     int scanMax = ImageDeal[Ysite+1].RightBorder - 1;
+     for (Xsite = ImageDeal[Ysite].LeftBorder + 1;
+          Xsite <= scanMax; Xsite++) {
         if ((*(PicTemp + Xsite) != 0) && (*(PicTemp + Xsite - 1) == 0)) {
           ImageDeal[Ysite].LeftBorder =
-              Xsite; //如果上一行左边线的右边有黑白跳变则为绝对边线直接取出
+              Xsite;
           ImageDeal[Ysite].IsLeftFind = 'T';
           break;
         }

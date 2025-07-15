@@ -18,6 +18,7 @@
 #include "Color.hpp"
 #include "Main.hpp"
 #include "zf_device_ips200_fb.h"
+#include "zf_driver_delay.h"
 #include "zf_driver_gpio.h"
 
 /**
@@ -69,8 +70,8 @@ void sigint_handler(int signum) {
 void timer_thread() {
     while (running.load()) {
         to_center(ImageStatus.Det_True, ImageStatus.MiddleLine);
+        debug(ImageFlag.image_element_rings_flag);
         std::this_thread::sleep_for(timer_interval);
-        // debug(ImageFlag.image_element_rings_flag);
     }
 }
 
@@ -117,15 +118,19 @@ int run() {
 
     while ((int)gpio_get_level(KEY_0) == 1){
         cap >> frame;
-
+        std::cout << "Ready To Go" << '\n';
         // gray frame process
         image_cv_zip(frame);
         imageprocess();
 
         // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         // ring_judge(frame);
+        system_delay_ms(100);
     }
+
+    std::cout << "Go!" << '\n';
     
     // control thread
     control = std::thread(timer_thread);
@@ -140,13 +145,13 @@ int run() {
 
         // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
-        // ring_judge(frame);
+        ring_judge(frame);
 
         if (ImageFlag.Zebra_Flag) {
             // exit(0);
         }
         if ((int)gpio_get_level(KEY_1) == 0) {
-            // exit(0);
+            exit(0);
         }
 
         // cv::Mat color_image(60, 80, CV_8UC3); // 彩色图像，60行80列，3通道
@@ -170,8 +175,8 @@ int run() {
         //     }
         // }
         // cv::resize(color_image, color_image, cv::Size(), 2.0, 2.0, cv::INTER_NEAREST);
-        // draw_rgb_img(color_image);
-        // debug(center);   
+        // // draw_rgb_img(color_image);
+        // // debug(center);
 
     }
     return 0;

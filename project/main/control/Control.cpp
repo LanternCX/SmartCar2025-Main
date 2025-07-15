@@ -33,8 +33,11 @@ speed_param speed;
 
 std::vector<control_param> pid_left;
 std::vector<control_param> pid_right;
+control_param pid_ring;
 
 std::vector<std::vector<int>> pid_map;
+
+const int base_duty = 2600;
 
 /**
  * @brief 模糊 PID 初始化
@@ -43,15 +46,17 @@ std::vector<std::vector<int>> pid_map;
  * @date 2025-07-06
  */
 void init_fuzzy_pid() {
-    pid_left.push_back(control_param(1.20, 3.20, 0, 0.005));
-    pid_left.push_back(control_param(1.30, 3.20, 0.001, 0.000));
-    pid_left.push_back(control_param(1.30, 3.20, 0.001, 0.000));
-    pid_left.push_back(control_param(1.30, 3.20, 0.001, 0.000));
+    pid_left.push_back(control_param(1.00, 3.20, 0, 0.005, 15));
+    pid_left.push_back(control_param(1.20, 3.20, 0.001, 0.000, 24));
+    pid_left.push_back(control_param(1.20, 3.20, 0.002, 0.000, 24));
+    pid_left.push_back(control_param(1.20, 3.20, 0.003, 0.000, 24));
 
-    pid_right.push_back(control_param(1.20, 3.20, 0, 0.005));
-    pid_right.push_back(control_param(1.30, 3.20, 0.001, 0.000));
-    pid_right.push_back(control_param(1.30, 3.20, 0.001, 0.000));
-    pid_right.push_back(control_param(1.30, 3.20, 0.001, 0.000));
+    pid_right.push_back(control_param(1.00, 3.20, 0, 0.005, 15));
+    pid_right.push_back(control_param(1.40, 3.20, 0.001, 0.000, 24));
+    pid_right.push_back(control_param(1.40, 3.20, 0.002, 0.000, 24));
+    pid_right.push_back(control_param(1.40, 3.20, 0.003, 0.000, 24));
+
+    pid_ring = control_param(1.20, 3.20, 0.001, 0.000, 24);
     // pids.push_back(control_param(1.50, 3.0, 0.000));
     // pids.push_back(control_param(1.60, 3.0, 0.000));
     // pids.push_back(control_param(1.70, 2.0, 0.000));
@@ -183,6 +188,45 @@ void set_control_param(control_param param) {
     dir_pid.kd = param.kd;
 
     gyro_pid.kp = param.gyro_p;
+    ImageStatus.TowPoint = param.tow_point;
+}
+
+/**
+ * @brief 通过舵机角度计算出差速
+ * @param angle 舵机角度
+ * @param v_center 目标线速度
+ * @param v_in 内轮速度
+ * @param v_out 外轮速度
+ * @return none
+ * @author Cao Xin
+ * @date 2025-07-13
+ */
+void calc_speed_det(const int & angle, const int & v_center, int & v_in, int & v_out) {
+    // C车差速: https://blog.csdn.net/weixin_43906861/article/details/123336728
+
+    double angle_deg = std::abs(angle);
+    double angle_rad = angle_deg * M_PI / 180.0;  // 角度转弧度
+
+    const float T = 32.0;
+    const float M = 4.0;
+    const float L4 = 15.0;
+    const float W = 155.0;
+    const float L = 200.0;
+    
+    float L2 = T * std::sin(angle_rad);
+    float L1 = M * std::cos(angle_rad);
+    float L3 = M - (L1 - L2);
+
+    // debug(L1, L2, L3);
+
+    // 虽然理想状态下 α > β 但是由于 C 车模型限制可以认为 α = β
+    float tan = L3 / std::sqrt(L4 * L4 - L3 * L3);
+
+    debug(L1, L2, L3, tan);
+    
+    float R = L / tan;
+    v_in = (R - W / 2) / R * v_center;
+    v_out = (R + W / 2) / R * v_center;
 }
 
 /**
@@ -209,6 +253,7 @@ control_param calc_control_param(int error) {
 
     // 圆环 PD
     if (ImageFlag.image_element_rings_flag) {
+        // control_param param = control_param(1.20, 3.20, 0.001, 0.000, 24);
         // set_control_param(control_param(1.20, 1.50, 0.0000));
     }
 
@@ -216,8 +261,6 @@ control_param calc_control_param(int error) {
     if (ImageStatus.Road_type == Straight) {
         // set_control_param(control_param(0.80, 0.80, 0.0015));
     }
-
-    debug(idx);
     
     if (error >= 0) {
         set_control_param(pid_left[idx]);
@@ -263,10 +306,31 @@ void to_center(int now, int target) {
 
     servo_duty_det += abs(error) * error * param.kp2;
 
-    debug(servo_duty_det);
+    if (abs(servo_duty_det) > 14) {
+        servo_duty_det = servo_duty_det > 0 ? 14 : -14;
+    }
+
+    if (abs(servo_duty_det) < 1) {
+        servo_duty_det = 0;
+    }
+
+    int left_duty, right_duty;
+    if (error > 0) {
+        // calc_speed_det(servo_duty_det, base_duty, left_duty, right_duty);
+        int det_duty = servo_duty_det * 2;
+        left_duty = base_duty - 2.8 * det_duty;
+        right_duty = base_duty + 0.2 * det_duty; 
+    } else if (error < 0){        
+        // calc_speed_det(servo_duty_det, base_duty, right_duty, left_duty);
+        int det_duty = servo_duty_det * 2;
+        right_duty = base_duty - 2.8 * det_duty;
+        left_duty = base_duty + 0.2 * det_duty; 
+    } else {   
+        left_duty = base_duty;
+        right_duty = base_duty;
+    }
     
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
-    
-    set_left_speed(speed.current);
-    set_right_speed(speed.current);
+    left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
+    right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
 }
