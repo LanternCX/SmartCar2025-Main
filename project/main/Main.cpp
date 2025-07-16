@@ -75,7 +75,7 @@ void timer_thread() {
         // 寻线到中线
         to_center(ImageStatus.Det_True, ImageStatus.MiddleLine);
         // debug(ImageFlag.ramp_flag);
-        debug(ImageFlag.image_element_rings_flag);
+        // debug(ImageFlag.image_element_rings_flag);
         std::this_thread::sleep_for(timer_interval);
     }
 }
