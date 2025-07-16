@@ -18,8 +18,8 @@
 #define PWM_DUTY_MAX (servo_pwm_info.duty_max)      
 
 // 定义主板上舵机活动范围 角度                                                     
-#define SERVO_MOTOR_L_MAX (75)                       
-#define SERVO_MOTOR_R_MAX (100)                       
+#define SERVO_MOTOR_L_MAX (60)                       
+#define SERVO_MOTOR_R_MAX (120)                       
 
 // 计算舵机占空比
 #define SERVO_MOTOR_DUTY(x) ((float)PWM_DUTY_MAX / (1000.0 / (float)SERVO_MOTOR_FREQ) * (0.5 + (float)(x) / 90.0))
@@ -34,5 +34,5 @@ typedef struct {
 } servo_params;
 
 void servo_init();
-void set_servo_duty(int duty);
+void set_servo_duty(float duty);
 servo_params get_servo_param();

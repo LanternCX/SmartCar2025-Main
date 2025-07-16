@@ -18,19 +18,6 @@
 struct pwm_info servo_pwm_info;
 servo_params servo_param;
 pid_param pid;
-low_pass_param centerLowPass;
-
-/**
- * @brief 初始化低通滤波器
- * @param lowpass P低通滤波器参数结构体指针
- * @return none
- * @author Cao Xin
- * @date 2025-04-06
- */
-void init_servo_low_pass(low_pass_param &lowpass){
-    lowpass.alpha = 0.1;
-    lowpass.last = 0.0;
-}
 
 /**
  * @brief 设置舵机占空比
@@ -39,7 +26,7 @@ void init_servo_low_pass(low_pass_param &lowpass){
  * @author Cao Xin
  * @date 2025-04-06
  */
-void set_servo_duty(int duty){
+void set_servo_duty(float duty){
     duty = clip(duty, SERVO_MOTOR_L_MAX, SERVO_MOTOR_R_MAX);
     pwm_set_duty(SERVO_MOTOR1_PWM, (uint16)SERVO_MOTOR_DUTY(duty));
 }
@@ -53,8 +40,7 @@ void set_servo_duty(int duty){
 void servo_init(){
     // 获取PWM设备信息
     pwm_get_dev_info(SERVO_MOTOR1_PWM, &servo_pwm_info);
-    init_servo_low_pass(centerLowPass);
-    servo_param.base_duty = 87;
+    servo_param.base_duty = 89.4;
     set_servo_duty(servo_param.base_duty);
 }
 

@@ -9,7 +9,7 @@ extern char img4[60][160];
 extern char img5[120][160];
 
 char image_cv_Init(void);
-char image_cv_zip(cv::Mat src);
+char image_cv_zip(cv::Mat &src);
 cv::VideoCapture & getCap();
 
 #endif // !__

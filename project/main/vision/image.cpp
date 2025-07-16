@@ -75,7 +75,7 @@ void Data_Settings(void) //参数赋值
   ImageStatus.straight_acc = 0;
   ImageStatus.Road_type = zero;
 
-  ImageStatus.TowPoint = 24;
+  ImageStatus.TowPoint = 18;
   ImageStatus.Threshold_static = 70;  //静态阈值  40-80
   ImageStatus.Threshold_detach = 180; //阳光算法  亮斑分离140-220
   ImageScanInterval = 2;
@@ -93,6 +93,7 @@ void Data_Settings(void) //参数赋值
 
   ImageFlag.is_flip = false;
   ImageFlag.stat_from = 0;
+  ImageFlag.ramp_flag = 0;
 
   //   SteerPIDdata.Dl = 21.07;
   //   SteerPIDdata.Dh = 5.0;
@@ -354,26 +355,27 @@ static void DrawLinesProcess(void) //////不用更改
         JumpPoint[0].type; //记录本行是否找到边线，即边线类型
     ImageDeal[Ysite].IsRightFind = JumpPoint[1].type;
 
-    //*************************添加右******************************** */
+    // *************************添加右********************************
     if (ImageDeal[Ysite].IsRightFind == 'W') {
       for (Xsite = (ImageDeal[Ysite].RightBorder - 1);
            Xsite >= (ImageDeal[Ysite].LeftBorder + 1); Xsite--) {
         if ((*(PicTemp + Xsite) != 0) && (*(PicTemp + Xsite + 1) == 0)) {
-          ImageDeal[Ysite].RightBorder =
-              Xsite; //如果上一行左边线的右边有黑白跳变则为绝对边线直接取出
+          ImageDeal[Ysite].RightBorder = Xsite;
           ImageDeal[Ysite].IsRightFind = 'T';
           break;
         }
       }
     }
 
-    //*************************添加左******************************** */
-    if (ImageDeal[Ysite].IsLeftFind == 'W') {
-      for (Xsite = (ImageDeal[Ysite].LeftBorder + 1);
-           Xsite <= (ImageDeal[Ysite].RightBorder - 1); Xsite++) {
+    // *************************添加左********************************
+  if (ImageDeal[Ysite].IsLeftFind == 'W') {
+     // 用上一行的 RightBorder 作为上限，避免被本行右角点影响
+     int scanMax = ImageDeal[Ysite+1].RightBorder - 1;
+     for (Xsite = ImageDeal[Ysite].LeftBorder + 1;
+          Xsite <= scanMax; Xsite++) {
         if ((*(PicTemp + Xsite) != 0) && (*(PicTemp + Xsite - 1) == 0)) {
           ImageDeal[Ysite].LeftBorder =
-              Xsite; //如果上一行左边线的右边有黑白跳变则为绝对边线直接取出
+              Xsite;
           ImageDeal[Ysite].IsLeftFind = 'T';
           break;
         }
@@ -910,88 +912,92 @@ static void RouteFilter(void) {
   }
 }
 
-// void GetDet() {
-//   float DetTemp = 0;
-//   int TowPoint = 0;
-//   float UnitAll = 0;
-
-//   // Speed_Control_Factor();
-
-//   /*固定圆环前瞻*/
-//   if (ImageStatus.image_element_rings_flag != 0)
-//     TowPoint = Circle[circle_count_flag];
-//   //   else if(ImageStatus.Road_type ==Cross_ture)
-//   //   {
-//   //     TowPoint=29;
-//   //   }
-//   else
-//     TowPoint = ImageStatus.TowPoint; //初始前瞻
-//   if (TowPoint < ImageStatus.OFFLine)
-//     TowPoint = ImageStatus.OFFLine + 1; //前瞻限幅
-//   if (TowPoint >= 49)
-//     TowPoint = 49;
-
-//   if ((TowPoint - 5) >=
-//       ImageStatus.OFFLine) //前瞻取设定前瞻还是可视距离  需要分情况讨论
-//                            //正常前瞻（与截止行相差5行）
-//   {
-//     for (int Ysite = (TowPoint - 5); Ysite < TowPoint; Ysite++) {
-//       DetTemp =
-//           DetTemp + Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll = UnitAll + Weighting[TowPoint - Ysite - 1];
-//     }
-//     for (Ysite = (TowPoint + 5); Ysite > TowPoint; Ysite--) {
-//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll += Weighting[-TowPoint + Ysite - 1];
-//     }
-//     DetTemp = (ImageDeal[TowPoint].Center + DetTemp) / (UnitAll + 1);
-
-//   } else if (TowPoint > ImageStatus.OFFLine) //正常前瞻与截止行不相差5行
-//   {
-//     for (Ysite = ImageStatus.OFFLine; Ysite < TowPoint; Ysite++) {
-//       DetTemp += Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll += Weighting[TowPoint - Ysite - 1];
-//     }
-//     for (Ysite = (TowPoint + TowPoint - ImageStatus.OFFLine); Ysite > TowPoint;
-//          Ysite--) {
-//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll += Weighting[-TowPoint + Ysite - 1];
-//     }
-//     DetTemp = (ImageDeal[Ysite].Center + DetTemp) / (UnitAll + 1);
-//   } else if (ImageStatus.OFFLine < 49) //前瞻等于截至行
-//   {
-//     for (Ysite = (ImageStatus.OFFLine + 3); Ysite > ImageStatus.OFFLine;
-//          Ysite--) {
-//       DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
-//       UnitAll += Weighting[-TowPoint + Ysite - 1];
-//     }
-//     DetTemp = (ImageDeal[ImageStatus.OFFLine].Center + DetTemp) / (UnitAll + 1);
-
-//   } else {
-//     DetTemp = ImageStatus.Det_True;
-//   }
-
-//   ImageStatus.Det_True = DetTemp;
-
-//   ImageStatus.TowPoint_True = TowPoint;
-// }
-
-
 void GetDet() {
   float DetTemp = 0;
   int TowPoint = 0;
+  float UnitAll = 0;
 
-  if (ImageFlag.image_element_rings_flag) {
-    TowPoint = Circle[ImageFlag.image_element_rings];
+  // Speed_Control_Factor();
+
+  /*固定圆环前瞻*/
+  if (ImageStatus.image_element_rings_flag != 0)
+    TowPoint = Circle[circle_count_flag];
+  //   else if(ImageStatus.Road_type ==Cross_ture)
+  //   {
+  //     TowPoint=29;
+  //   }
+  else
+    TowPoint = ImageStatus.TowPoint; //初始前瞻
+  if (TowPoint < ImageStatus.OFFLine)
+    TowPoint = ImageStatus.OFFLine + 1; //前瞻限幅
+  if (TowPoint >= 49)
+    TowPoint = 49;
+
+  if ((TowPoint - 5) >=
+      ImageStatus.OFFLine) //前瞻取设定前瞻还是可视距离  需要分情况讨论
+                           //正常前瞻（与截止行相差5行）
+  {
+    for (int Ysite = (TowPoint - 5); Ysite < TowPoint; Ysite++) {
+      DetTemp =
+          DetTemp + Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll = UnitAll + Weighting[TowPoint - Ysite - 1];
+    }
+    for (Ysite = (TowPoint + 5); Ysite > TowPoint; Ysite--) {
+      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll += Weighting[-TowPoint + Ysite - 1];
+    }
+    DetTemp = (ImageDeal[TowPoint].Center + DetTemp) / (UnitAll + 1);
+
+  } else if (TowPoint > ImageStatus.OFFLine) //正常前瞻与截止行不相差5行
+  {
+    for (Ysite = ImageStatus.OFFLine; Ysite < TowPoint; Ysite++) {
+      DetTemp += Weighting[TowPoint - Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll += Weighting[TowPoint - Ysite - 1];
+    }
+    for (Ysite = (TowPoint + TowPoint - ImageStatus.OFFLine); Ysite > TowPoint;
+         Ysite--) {
+      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll += Weighting[-TowPoint + Ysite - 1];
+    }
+    DetTemp = (ImageDeal[Ysite].Center + DetTemp) / (UnitAll + 1);
+  } else if (ImageStatus.OFFLine < 49) //前瞻等于截至行
+  {
+    for (Ysite = (ImageStatus.OFFLine + 3); Ysite > ImageStatus.OFFLine;
+         Ysite--) {
+      DetTemp += Weighting[-TowPoint + Ysite - 1] * (ImageDeal[Ysite].Center);
+      UnitAll += Weighting[-TowPoint + Ysite - 1];
+    }
+    DetTemp = (ImageDeal[ImageStatus.OFFLine].Center + DetTemp) / (UnitAll + 1);
+
   } else {
-    TowPoint = ImageStatus.TowPoint;
+    DetTemp = ImageStatus.Det_True;
   }
-  DetTemp = ImageDeal[TowPoint].Center;
-  
+
   ImageStatus.Det_True = DetTemp;
 
   ImageStatus.TowPoint_True = TowPoint;
 }
+
+
+// void GetDet() {
+//   float DetTemp = 0;
+//   int TowPoint = 0;
+
+//   if (ImageFlag.image_element_rings_flag) {
+//     TowPoint = Circle[ImageFlag.image_element_rings];
+//   } else {
+//     TowPoint = ImageStatus.TowPoint;
+//   }
+
+//   if (ImageStatus.TowPoint < ImageStatus.OFFLine) {
+//     TowPoint = ImageStatus.OFFLine;  
+//   }
+
+//   DetTemp = ImageDeal[TowPoint].Center;
+  
+//   ImageStatus.TowPoint_True = TowPoint;
+//   ImageStatus.Det_True = DetTemp;
+// }
 
 void Element_Judgment_Left_Rings() {
 
@@ -1202,8 +1208,8 @@ void Element_Handle_Left_Rings() {
   //    }
 
   //进环
-  if (ImageFlag.image_element_rings_flag == 5 &&
-      /*num>15)*/ ImageStatus.Right_Line > 10) {
+  if (ImageFlag.image_element_rings_flag == 5 && 
+    ((ImageStatus.Right_Line > 10 && ImageStatus.Left_Line > 10) || (ImageFlag.is_red)) ) {
     ImageFlag.image_element_rings_flag = 6;
     //   ImageStatus.Road_type = LeftCirque;
     // wireless_uart_send_byte(6);
@@ -1267,10 +1273,11 @@ void Element_Handle_Left_Rings() {
   if (ImageFlag.image_element_rings_flag == 8) {
     if (
         // Straight_Judge(2, ImageStatus.OFFLine+15, 50) < 1
-        ImageStatus.Right_Line < 10 && ImageStatus.OFFLine < 10
-
-        ) //右边为直线且截止行（前瞻值）很小
-    {
+        (ImageStatus.Right_Line < 10 && 
+        ImageStatus.OFFLine < 10) || 
+        ImageFlag.is_red
+      ) {
+      //右边为直线且截止行（前瞻值）很小
       ImageFlag.image_element_rings_flag = 9;
       // wireless_uart_send_byte(9);
     }
@@ -1838,8 +1845,8 @@ void Element_Test() {
   if (ImageStatus.Road_type !=
       Ramp) /*&& circle_num < 2 */ //圆环检测//&& ImageStatus.Road_type != Ramp
   {
-    // Element_Judgment_Left_Rings();  //左圆环检测
-    // Element_Judgment_Right_Rings(); //右圆环检测
+    Element_Judgment_Left_Rings();  //左圆环检测
+    Element_Judgment_Right_Rings(); //右圆环检测
   }
 }
 

@@ -79,3 +79,5 @@ typedef struct {
 float pid_slove(pid_param *pid, float error);
 
 float increment_pid_solve(pid_param *pid, float error);
+
+float bangbang_pid_solve(pid_param *pid, float error, float BangBang_output, float BangBang_error);
