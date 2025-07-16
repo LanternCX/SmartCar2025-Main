@@ -1208,8 +1208,8 @@ void Element_Handle_Left_Rings() {
   //    }
 
   //进环
-  if (ImageFlag.image_element_rings_flag == 5 &&
-      /*num>15)*/ ImageStatus.Right_Line > 10) {
+  if (ImageFlag.image_element_rings_flag == 5 && 
+    ((ImageStatus.Right_Line > 10 && ImageStatus.Left_Line > 10) || (ImageFlag.is_red)) ) {
     ImageFlag.image_element_rings_flag = 6;
     //   ImageStatus.Road_type = LeftCirque;
     // wireless_uart_send_byte(6);

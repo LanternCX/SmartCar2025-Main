@@ -28,6 +28,8 @@ pid_param gyro_pid;
 low_pass_param dir_low_pass;
 // 偏航角低通参数
 low_pass_param gyro_low_pass;
+
+low_pass_param servo_low_pass;
 // 当前速度参数
 speed_param speed;
 
@@ -39,7 +41,7 @@ control_param pid_ramp;
 
 std::vector<std::vector<int>> pid_map;
 
-const int base_duty = 2400;
+const int base_duty = 2300;
 
 /**
  * @brief 模糊 PID 初始化
@@ -59,8 +61,8 @@ void init_fuzzy_pid() {
     pid_right.push_back(control_param(1.40, 3.20, 0.004, 0.000, 20));
 
     pid_right_ring = {
-        control_param(1.20, 2.40, 0.001, 0.000, 22), 
-        control_param(1.20, 3.20, 0.002, 0.003, 24)
+        control_param(1.20, 2.40, 0.002, 0.000, 22), 
+        control_param(1.20, 3.20, 0.003, 0.003, 24)
     };
     pid_left_ring = {
         control_param(1.20, 2.40, 0.001, 0.000, 22), 
@@ -115,6 +117,10 @@ void init_dir_pid(pid_param &pid) {
  */
 void init_dir_lowpass(low_pass_param &lowpass) {
     lowpass.alpha = 0.5;
+}
+
+void init_servo_low_pass(low_pass_param &lowpass) {
+    lowpass.alpha = 0.95;    
 }
 
 /**
@@ -172,6 +178,7 @@ void control_init(int line_speed, int curve_speed) {
 
     init_gyro_pid(gyro_pid);
     init_gyro_lowpass(gyro_low_pass);
+    init_servo_low_pass(servo_low_pass);
 }
 
 /**
@@ -253,12 +260,10 @@ control_param calc_control_param(int error) {
         int idx = !(ImageFlag.image_element_rings_flag == 5 || ImageFlag.image_element_rings_flag == 6);
         if (ImageFlag.is_flip == 0) {
             set_control_param(pid_left_ring[idx]);
-            debug("left");
             return pid_left_ring[idx];
         }
         if (ImageFlag.is_flip == 1) {
             set_control_param(pid_right_ring[idx]);
-            debug("right");
             return pid_right_ring[idx];
         }
     }
@@ -292,11 +297,14 @@ void to_center(int now, int target) {
     static int error = 0;
     // 舵机占空比相较目标点的位置值
     static float servo_duty_det = 0;
-    
     if (now != 0) {
         error = target - now;
         error = low_pass_filter(&dir_low_pass, error);
     }
+
+    // if (ImageFlag.image_element_rings_flag == 5 || ImageFlag.image_element_rings_flag == 6) {
+    //     error *= 1;
+    // }
     
     // 计算模糊 pid
     control_param param = calc_control_param(error);
@@ -320,6 +328,7 @@ void to_center(int now, int target) {
     if (abs(servo_duty_det) < 1) {
         servo_duty_det = 0;
     }
+    servo_duty_det = low_pass_filter(&servo_low_pass, servo_duty_det);
 
     int left_duty, right_duty;
     if (error > 0) {
