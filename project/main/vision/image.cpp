@@ -1209,13 +1209,13 @@ void Element_Handle_Left_Rings() {
 
   //进环
   if (ImageFlag.image_element_rings_flag == 5 && 
-    ((ImageStatus.Right_Line > 10 && ImageStatus.Left_Line > 10) || (ImageFlag.is_red)) ) {
+    ((ImageStatus.Right_Line > 20 && ImageStatus.Left_Line > 20) && (!ImageFlag.is_red)) ) {
     ImageFlag.image_element_rings_flag = 6;
     //   ImageStatus.Road_type = LeftCirque;
     // wireless_uart_send_byte(6);
   }
   //进环小圆环
-  if (ImageFlag.image_element_rings_flag == 6 && ImageStatus.Right_Line < 3) {
+  if (ImageFlag.image_element_rings_flag == 6 && ImageStatus.Right_Line < 6) {
     // Stop = 1;
     ImageFlag.image_element_rings_flag = 7;
     // wireless_uart_send_byte(8);
@@ -1316,8 +1316,7 @@ void Element_Handle_Left_Rings() {
     }
   }
   //进环  补线
-  if (ImageFlag.image_element_rings_flag == 5 ||
-      ImageFlag.image_element_rings_flag == 6) {
+  if (ImageFlag.image_element_rings_flag == 5) {
     int flag_Xsite_1 = 0;
     int flag_Ysite_1 = 0;
     float Slope_Rings = 0;
@@ -1328,7 +1327,7 @@ void Element_Handle_Left_Rings() {
         if (img1[Ysite][Xsite] == 1 && img1[Ysite][Xsite + 1] == 0) {
           flag_Ysite_1 = Ysite;
           flag_Xsite_1 = Xsite;
-          Slope_Rings = (float)(79 - flag_Xsite_1) / (float)(59 - flag_Ysite_1);
+          Slope_Rings = (float)(79 - flag_Xsite_1) / ((float)(59 - flag_Ysite_1) * 2 / 3);
           break;
         }
       }
@@ -1346,7 +1345,7 @@ void Element_Handle_Left_Rings() {
           flag_Ysite_1 = Ysite;
           flag_Xsite_1 = ImageDeal[flag_Ysite_1].LeftBorder;
           ImageStatus.OFFLine = Ysite;
-          Slope_Rings = (float)(79 - flag_Xsite_1) / (float)(59 - flag_Ysite_1);
+          Slope_Rings = (float)(79 - flag_Xsite_1) / ((float)(59 - flag_Ysite_1) * 2 / 3);
           break;
         }
       }
@@ -1401,7 +1400,7 @@ void Element_Handle_Left_Rings() {
   if (ImageFlag.image_element_rings_flag == 7) {
   }
   //大圆环出环 补线
-  if (ImageFlag.image_element_rings_flag == 8) //大圆环
+  if (ImageFlag.image_element_rings_flag == 8 || ImageFlag.image_element_rings_flag == 6) //大圆环
   {
     Repair_Point_Xsite = 30;
     Repair_Point_Ysite = 7;
@@ -1602,7 +1601,7 @@ void Element_Handle_Right_Rings() {
     int flag_Xsite_1 = 0;
     int flag_Ysite_1 = 0;
     float Slope_Right_Rings = 0;
-    for (Ysite = 55; Ysite > ImageStatus.OFFLine; Ysite--) {
+    for (Ysite = 35; Ysite > ImageStatus.OFFLine; Ysite--) {
       for (Xsite = ImageDeal[Ysite].LeftBorder + 1;
            Xsite < ImageDeal[Ysite].RightBorder - 1; Xsite++) {
         if (img1[Ysite][Xsite] == 1 && img1[Ysite][Xsite + 1] == 0) {
