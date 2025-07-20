@@ -287,6 +287,7 @@ typedef struct {
 
   // 坡道状态
   int ramp_flag;
+
 } ImageFlagtypedef;
 
 typedef struct {

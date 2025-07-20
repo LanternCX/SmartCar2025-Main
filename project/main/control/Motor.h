@@ -52,3 +52,4 @@ void set_right_speed(int speed);
 int sync_motor_duty(int duty);
 void left_motor_run(int duty, int dir);
 void right_motor_run(int duty, int dir);
+void set_speed(int speed, int servo_duty_det, int base_duty);

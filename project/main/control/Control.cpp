@@ -41,7 +41,8 @@ control_param pid_ramp;
 
 std::vector<std::vector<int>> pid_map;
 
-const int base_duty = 2300;
+const int max_speed = 100;
+const int base_duty = 2400;
 
 /**
  * @brief 模糊 PID 初始化
@@ -61,12 +62,12 @@ void init_fuzzy_pid() {
     pid_right.push_back(control_param(1.40, 3.20, 0.004, 0.000, 20));
 
     pid_right_ring = {
-        control_param(1.20, 2.40, 0.002, 0.000, 22), 
-        control_param(1.20, 3.20, 0.003, 0.003, 24)
+        control_param(1.00, 4.00, 0.001, 0.000, 22), 
+        control_param(1.00, 3.20, 0.004, 0.002, 24)
     };
     pid_left_ring = {
-        control_param(1.20, 2.40, 0.001, 0.000, 22), 
-        control_param(1.20, 3.20, 0.002, 0.003, 24)
+        control_param(1.00, 4.00, 0.001, 0.000, 22), 
+        control_param(1.00, 3.20, 0.002, 0.003, 24)
     };
 
     pid_ramp = control_param(0.01, 0.00, 0, 0.0, 40);
@@ -255,6 +256,10 @@ control_param calc_control_param(int error) {
 
     idx = clip(idx, 0, pid_left.size() - 1);
 
+    if (idx == 0) {
+
+    }
+
     // 圆环参数
     if (ImageFlag.image_element_rings_flag) {
         int idx = !(ImageFlag.image_element_rings_flag == 5 || ImageFlag.image_element_rings_flag == 6);
@@ -297,14 +302,21 @@ void to_center(int now, int target) {
     static int error = 0;
     // 舵机占空比相较目标点的位置值
     static float servo_duty_det = 0;
+    // if (ImageFlag.image_element_rings_flag == 6) {
+    //     error *= 0.95;
+    // } else if (now != 0) {
+    //     error = target - now;
+    //     error = low_pass_filter(&dir_low_pass, error);
+    // }
+
     if (now != 0) {
         error = target - now;
         error = low_pass_filter(&dir_low_pass, error);
     }
 
-    // if (ImageFlag.image_element_rings_flag == 5 || ImageFlag.image_element_rings_flag == 6) {
-    //     error *= 1;
-    // }
+    if (ImageFlag.image_element_rings_flag == 5 || ImageFlag.image_element_rings_flag == 6) {
+        // error *= 0.95;
+    }
     
     // 计算模糊 pid
     control_param param = calc_control_param(error);
@@ -330,23 +342,6 @@ void to_center(int now, int target) {
     }
     servo_duty_det = low_pass_filter(&servo_low_pass, servo_duty_det);
 
-    int left_duty, right_duty;
-    if (error > 0) {
-        // calc_speed_det(servo_duty_det, base_duty, left_duty, right_duty);
-        int det_duty = servo_duty_det * 2;
-        left_duty = base_duty - 2.8 * det_duty;
-        right_duty = base_duty + 0.2 * det_duty; 
-    } else if (error < 0){        
-        // calc_speed_det(servo_duty_det, base_duty, right_duty, left_duty);
-        int det_duty = servo_duty_det * 2;
-        right_duty = base_duty - 2.8 * det_duty;
-        left_duty = base_duty + 0.2 * det_duty; 
-    } else {   
-        left_duty = base_duty;
-        right_duty = base_duty;
-    }
-    
+    set_speed(max_speed, servo_duty_det, base_duty);
     set_servo_duty(get_servo_param().base_duty + servo_duty_det);
-    left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
-    right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
 }

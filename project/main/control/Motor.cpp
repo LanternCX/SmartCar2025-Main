@@ -1,6 +1,8 @@
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 
+#include "image.hpp"
 #include "zf_common_headfile.h"
 
 #include "Motor.h"
@@ -40,9 +42,9 @@ low_pass_param right_low_pass;
  * @date 2025-04-05
  */
 void init_motor_pid(pid_param &pid){
-    pid.kp = 0.030;
-    pid.ki = 0.035;
-    pid.kd = 0.025;
+    pid.kp = 0.00;
+    pid.ki = 10.00;
+    pid.kd = 0.00;
 
     pid.p_max = 30.0;
     pid.i_max = 30.0;
@@ -185,6 +187,58 @@ void set_right_speed(int speed){
         // cout << now << '\n';
     }
 }
+
+/**
+ * @brief 限制速度
+ */
+void set_speed(int speed, int servo_duty_det, int base_duty) {
+    static int duty = 0;
+    // 获取当前转速
+    float right = encoder_get_count(ENCODER_1);
+    // 对转速进行低通滤波
+    right = low_pass_filter(&right_low_pass, right);
+
+    // 左右编码器因为朝向安装的不同左电机需要取相反数
+    float left = -encoder_get_count(ENCODER_2);
+    // 对转速进行低通滤波
+    left = low_pass_filter(&left_low_pass, left);
+
+    int now = (left + right) / 2;
+    const bool enable = 0;
+    if (ImageStatus.straight_acc_flag == 1 && enable) {
+        debug("pid");
+        float error = (speed - now);
+    
+        // PID 计算增量
+        float det = increment_pid_solve(&right_pid, error);
+    
+        duty += det;
+        left_motor_run(abs(duty), duty > 0 ? 0 : 1);
+        right_motor_run(abs(duty), duty < 0 ? 0 : 1);
+    } else {
+        debug("no pid");
+        int left_duty, right_duty;
+        if (servo_duty_det > 0) {
+            // calc_speed_det(servo_duty_det, base_duty, left_duty, right_duty);
+            int det_duty = servo_duty_det * 2;
+            left_duty = base_duty - 2.8 * det_duty;
+            right_duty = base_duty + 0.2 * det_duty; 
+        } else if (servo_duty_det < 0){        
+            // calc_speed_det(servo_duty_det, base_duty, right_duty, left_duty);
+            int det_duty = servo_duty_det * 2;
+            right_duty = base_duty - 2.8 * det_duty;
+            left_duty = base_duty + 0.2 * det_duty; 
+        } else {   
+            left_duty = base_duty;
+            right_duty = base_duty;
+        }
+
+        left_motor_run(abs(left_duty), left_duty > 0 ? 0 : 1);
+        right_motor_run(abs(right_duty), right_duty < 0 ? 0 : 1);
+    }
+}
+
+
 /**
  * @brief 校准左右轮转速
  * @author Cao Xin
