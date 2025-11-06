@@ -7,6 +7,7 @@
 #include "PID.h"
 #include "LowPass.h"
 #include "Math.h"
+#include "Debug.h"
 
  /**
  * @file Servo.cpp
@@ -40,7 +41,7 @@ void set_servo_duty(float duty){
 void servo_init(){
     // 获取PWM设备信息
     pwm_get_dev_info(SERVO_MOTOR1_PWM, &servo_pwm_info);
-    servo_param.base_duty = 89.4;
+    servo_param.base_duty = 88;
     set_servo_duty(servo_param.base_duty);
 }
 

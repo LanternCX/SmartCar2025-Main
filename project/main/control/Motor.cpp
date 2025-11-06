@@ -206,7 +206,7 @@ void set_speed(int speed, int servo_duty_det, int base_duty) {
     int now = (left + right) / 2;
     const bool enable = 0;
     if (ImageStatus.straight_acc_flag == 1 && enable) {
-        debug("pid");
+        // debug("pid");
         float error = (speed - now);
     
         // PID 计算增量
@@ -216,7 +216,7 @@ void set_speed(int speed, int servo_duty_det, int base_duty) {
         left_motor_run(abs(duty), duty > 0 ? 0 : 1);
         right_motor_run(abs(duty), duty < 0 ? 0 : 1);
     } else {
-        debug("no pid");
+        // debug("no pid");
         int left_duty, right_duty;
         if (servo_duty_det > 0) {
             // calc_speed_det(servo_duty_det, base_duty, left_duty, right_duty);

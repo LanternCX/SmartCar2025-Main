@@ -129,7 +129,6 @@ int run() {
         // gray frame process
         image_cv_zip(frame);
         imageprocess();
-
         // rgb frame process
         resize(frame, frame, cv::Size(80, 60));
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -192,10 +191,11 @@ int run() {
 int test() {
     init();
     while (true) {
-        ramp_detect();
-        system_delay_ms(20);
+        debug(imu_get_raw(imu_file_path[GYRO_Y_RAW]));
+        // left_motor_run(1000, -1);
+        // right_motor_run(1000, 1);
+        // system_delay_ms(20);
     }
-
     return 0;
 }
 

@@ -51,15 +51,15 @@ const int base_duty = 2400;
  * @date 2025-07-06
  */
 void init_fuzzy_pid() {
-    pid_left.push_back(control_param(1.00, 3.20, 0, 0.005, 15));
-    pid_left.push_back(control_param(1.20, 3.20, 0.001, 0.000, 20));
-    pid_left.push_back(control_param(1.20, 3.20, 0.002, 0.000, 20));
-    pid_left.push_back(control_param(1.20, 3.20, 0.003, 0.000, 20));
+    pid_left.push_back(control_param(2.00, 3.20, 0, 0.000, 24));
+    // pid_left.push_back(control_param(1.20, 3.20, 0.001, 0.000, 20));
+    // pid_left.push_back(control_param(1.20, 3.20, 0.002, 0.000, 20));
+    // pid_left.push_back(control_param(1.20, 3.20, 0.003, 0.000, 20));
 
-    pid_right.push_back(control_param(1.00, 3.20, 0, 0.005, 15));
-    pid_right.push_back(control_param(1.40, 3.20, 0.002, 0.000, 20));
-    pid_right.push_back(control_param(1.40, 3.20, 0.003, 0.000, 20));
-    pid_right.push_back(control_param(1.40, 3.20, 0.004, 0.000, 20));
+    pid_right.push_back(control_param(2.00, 3.20, 0, 0.000, 24));
+    // pid_right.push_back(control_param(1.40, 3.20, 0.002, 0.000, 20));
+    // pid_right.push_back(control_param(1.40, 3.20, 0.003, 0.000, 20));
+    // pid_right.push_back(control_param(1.40, 3.20, 0.004, 0.000, 20));
 
     pid_right_ring = {
         control_param(1.00, 4.00, 0.001, 0.000, 22), 
@@ -72,11 +72,18 @@ void init_fuzzy_pid() {
 
     pid_ramp = control_param(0.01, 0.00, 0, 0.0, 40);
 
+    // pid_map = {
+    //     { 0, 0, 0, 0, },
+    //     { 1, 1, 2, 2, },
+    //     { 2, 2, 3, 3, },
+    //     { 3, 3, 3, 3, },
+    // };
+
     pid_map = {
         { 0, 0, 0, 0, },
-        { 1, 1, 2, 2, },
-        { 2, 2, 3, 3, },
-        { 3, 3, 3, 3, },
+        { 0, 0, 0, 0, },
+        { 0, 0, 0, 0, },
+        { 0, 0, 0, 0, },
     };
 }
 
